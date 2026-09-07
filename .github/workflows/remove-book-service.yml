@@ -1,0 +1,78 @@
+name: Remove service booking content
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/remove-book-service.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Remove service booking content everywhere
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          for path in list(Path('en').rglob('*.html')) + list(Path('ar').rglob('*.html')):
+              text = path.read_text(encoding='utf-8')
+              original = text
+
+              # Remove full homepage service highlight section.
+              text = re.sub(r'<section class="book-highlight">.*?</section>', '', text, flags=re.S)
+
+              # Remove full article advisory CTA blocks that promote booking a service.
+              text = re.sub(
+                  r'<div class="article-cta"><div>.*?</div><a[^>]*href="[^"]*book-service\.html"[^>]*>.*?</a></div>',
+                  '', text, flags=re.S
+              )
+
+              # Remove every remaining link to the booking pages from nav, hero, footer, etc.
+              text = re.sub(r'<a\b[^>]*href="[^"]*book-service\.html"[^>]*>.*?</a>', '', text, flags=re.S)
+
+              # Remove any stray booking labels if they survived outside links.
+              text = text.replace('Book a Service', '').replace('Book a Finance Service', '')
+              text = text.replace('احجز خدمة مالية', '').replace('احجز خدمة', '')
+
+              if text != original:
+                  path.write_text(text, encoding='utf-8')
+
+          # Remove the booking pages themselves.
+          for p in [Path('en/book-service.html'), Path('ar/book-service.html')]:
+              if p.exists():
+                  p.unlink()
+
+          # Remove booking URLs from sitemap.
+          sitemap = Path('sitemap.xml')
+          if sitemap.exists():
+              lines = sitemap.read_text(encoding='utf-8').splitlines()
+              lines = [line for line in lines if '/book-service.html' not in line]
+              sitemap.write_text('\n'.join(lines) + '\n', encoding='utf-8')
+
+          # Fail if any HTML still references the booking page or booking labels.
+          offenders = []
+          for path in list(Path('en').rglob('*.html')) + list(Path('ar').rglob('*.html')):
+              text = path.read_text(encoding='utf-8')
+              if ('book-service.html' in text or 'Book a Service' in text or
+                  'Book a Finance Service' in text or 'احجز خدمة' in text):
+                  offenders.append(str(path))
+          if offenders:
+              raise SystemExit('Booking content still found in: ' + ', '.join(offenders))
+          PY
+      - name: Commit cleanup
+        run: |
+          git config user.name "aymanesam90-dot"
+          git config user.email "ayman.esam90@gmail.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes needed"
+          else
+            git commit -m "Remove service booking content sitewide [skip ci]"
+            git push
+          fi
