@@ -1,3 +1,23 @@
 @import url("custom-v12-base.css");
+@import url('https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700;800;900&display=swap');
+
+/* Arabic typography: Alexandria */
+html[lang="ar"] body,
+html[lang="ar"] button,
+html[lang="ar"] input,
+html[lang="ar"] textarea,
+html[lang="ar"] select,
+html[lang="ar"] .hero h1,
+html[lang="ar"] .page-hero h1,
+html[lang="ar"] h1,
+html[lang="ar"] h2,
+html[lang="ar"] h3,
+html[lang="ar"] h4,
+html[lang="ar"] h5,
+html[lang="ar"] h6,
+html[lang="ar"] .footer-brand {
+  font-family: 'Alexandria', Arial, sans-serif !important;
+}
+
 /* Service booking retired sitewide */
 a[href*="book-service.html"],.book-highlight,.article-cta:has(a[href*="book-service.html"]){display:none!important;}
