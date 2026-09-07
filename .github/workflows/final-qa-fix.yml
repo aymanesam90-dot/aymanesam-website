@@ -24,34 +24,30 @@ jobs:
 
           css=Path('assets/custom-v12.css')
           s=css.read_text(encoding='utf-8')
-          # Make the responsive picture/image actually obey the intended portrait dimensions.
-          if '.hero-img picture{display:block;width:100%;height:100%}' not in s:
-              s=s.replace('.hero-img{height:500px!important;width:100%!important;object-fit:cover!important}', '.hero-img{height:500px!important;width:100%!important}\n.hero-img picture{display:block;width:100%;height:100%}\n.hero-img picture img{display:block;width:100%!important;height:100%!important;object-fit:cover!important}')
-          else:
-              s=s.replace('.hero-img{height:500px!important;width:100%!important;object-fit:cover!important}', '.hero-img{height:500px!important;width:100%!important}')
-              if '.hero-img picture img{display:block;width:100%!important;height:100%!important;object-fit:cover!important}' not in s:
-                  s=s.replace('.hero-img picture{display:block;width:100%;height:100%}', '.hero-img picture{display:block;width:100%;height:100%}\n.hero-img picture img{display:block;width:100%!important;height:100%!important;object-fit:cover!important}')
-          # Remove obsolete service-booking fallback now that the HTML/pages are physically gone.
+          s=s.replace('.hero-img{height:500px!important;width:100%!important;object-fit:cover!important}', '.hero-img{height:500px!important;width:100%!important}')
+          if '.hero-img picture img{display:block;width:100%!important;height:100%!important;object-fit:cover!important}' not in s:
+              s=s.replace('.hero-img picture{display:block;width:100%;height:100%}', '.hero-img picture{display:block;width:100%;height:100%}\n.hero-img picture img{display:block;width:100%!important;height:100%!important;object-fit:cover!important}')
           s=re.sub(r'\n?/\* Service booking retired sitewide \*/\n?a\[href\*="book-service\.html"\],\.book-highlight,\.article-cta:has\(a\[href\*="book-service\.html"\]\)\{display:none!important;\}\s*', '\n', s)
           css.write_text(s,encoding='utf-8')
 
           html_files=list(Path('en').rglob('*.html'))+list(Path('ar').rglob('*.html'))
+          nested_names={'budgeting-as-management-system.html','working-capital-discipline.html','month-end-close-discipline.html'}
           for p in html_files:
               t=p.read_text(encoding='utf-8')
               lang='ar' if p.parts[0]=='ar' else 'en'
               alt='en_US' if lang=='ar' else 'ar_SA'
-              # Cache bust current CSS so the portrait sizing fix reaches Cloudflare/browser immediately.
               t=re.sub(r'custom-v12\.css\?v=\d+', 'custom-v12.css?v=21', t)
-              # Add reciprocal Open Graph locale where missing.
               if 'property="og:locale:alternate"' not in t:
                   marker=f'<meta property="og:locale" content="{"ar_SA" if lang=="ar" else "en_US"}">'
                   if marker in t:
                       t=t.replace(marker, marker+f'<meta property="og:locale:alternate" content="{alt}">',1)
+              # Correct footer links on the three newer nested Insight pages.
+              if p.parent.name=='insights' and p.name in nested_names:
+                  for name in ('about.html','expertise.html','experience.html','insights.html'):
+                      t=t.replace(f'href="{name}"', f'href="../{name}"')
               p.write_text(t,encoding='utf-8')
 
-          # Static link/asset/SEO audit.
           errors=[]
-          warnings=[]
           root=Path('.').resolve()
           class Parser(HTMLParser):
               def __init__(self):
@@ -79,7 +75,7 @@ jobs:
                   if ref.startswith(('#','mailto:','tel:','http://','https://','javascript:')): continue
                   clean=ref.split('#')[0].split('?')[0]
                   if not clean: continue
-                  target=(p.parent/clean).resolve()
+                  target=(root/clean.lstrip('/')).resolve() if clean.startswith('/') else (p.parent/clean).resolve()
                   try: target.relative_to(root)
                   except ValueError: errors.append(f'{p}: path escapes repo {ref}'); continue
                   if not target.exists(): errors.append(f'{p}: missing local target {ref}')
@@ -94,12 +90,10 @@ jobs:
           if 'Sitemap: https://aymanesam.com/sitemap.xml' not in rob: errors.append('robots: sitemap directive missing')
 
           print(f'Audited {len(html_files)} HTML pages and {len(urls)} sitemap URLs.')
-          if warnings:
-              print('WARNINGS:'); [print(' -',x) for x in warnings]
           if errors:
               print('ERRORS:'); [print(' -',x) for x in errors]
               sys.exit(1)
-          print('FINAL QA PASS: no broken local links/assets, required SEO basics present, sitemap matches files.')
+          print('FINAL QA PASS: no broken local links/assets, SEO basics present, sitemap matches files.')
           PY
       - name: Commit final QA cleanup
         run: |
