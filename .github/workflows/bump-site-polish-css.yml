@@ -1,0 +1,43 @@
+name: Refresh sitewide polish CSS
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/bump-site-polish-css.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Force all public pages to load latest CSS
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          changed=[]
+          for root in ('en','ar'):
+              for path in Path(root).rglob('*.html'):
+                  text=path.read_text(encoding='utf-8')
+                  new=re.sub(r'custom-v12\.css\?v=\d+', 'custom-v12.css?v=20', text)
+                  if new!=text:
+                      path.write_text(new,encoding='utf-8')
+                      changed.append(str(path))
+          print('Updated',len(changed),'pages')
+          PY
+      - name: Commit CSS cache refresh
+        run: |
+          git config user.name "aymanesam90-dot"
+          git config user.email "ayman.esam90@gmail.com"
+          git add en ar
+          if git diff --cached --quiet; then
+            echo "No changes needed"
+          else
+            git commit -m "Apply professional typography and mobile polish sitewide [skip ci]"
+            git push
+          fi
