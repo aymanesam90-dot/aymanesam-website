@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - 'tools/upgrade_insights.py'
+      - '.github/workflows/upgrade-insights.yml'
 permissions:
   contents: write
 jobs:
