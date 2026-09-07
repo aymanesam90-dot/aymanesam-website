@@ -187,3 +187,11 @@ html[lang="ar"] .client-card b,html[lang="ar"] .company b,html[lang="ar"] .conta
   html[lang="ar"] .lead{font-size:16px!important;line-height:2!important}
   html[lang="ar"] .article-page p,html[lang="ar"] .article-page li{font-size:16px!important;line-height:2!important}
 }
+
+
+/* FINAL portrait edge fix */
+.executive-panel .portrait-small{width:100%!important;max-width:430px!important;height:500px!important;min-height:500px!important;justify-self:center!important;padding:0!important;margin:0!important;background:transparent!important;overflow:hidden!important;border-radius:28px!important}
+.executive-panel .portrait-small picture{display:block!important;width:100%!important;height:100%!important;margin:0!important;padding:0!important}
+.executive-panel .portrait-small picture img{display:block!important;width:100%!important;height:100%!important;max-height:none!important;object-fit:cover!important;object-position:center 25%!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important}
+@media(max-width:850px){.executive-panel .portrait-small{max-width:360px!important;height:430px!important;min-height:430px!important;border-radius:24px!important}}
+@media(max-width:560px){.executive-panel .portrait-small{max-width:300px!important;height:360px!important;min-height:360px!important;border-radius:20px!important}}
