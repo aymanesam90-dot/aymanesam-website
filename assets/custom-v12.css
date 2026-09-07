@@ -34,8 +34,12 @@ body{font-size:16px;line-height:1.75}
 .hero .cta{margin-top:27px!important}
 .btn{min-height:46px!important;padding:11px 17px!important;font-size:13px!important}
 .pill{font-size:11px!important;padding:7px 10px!important}
-.hero-visual{min-height:590px!important}
-.hero-img{height:590px!important}
+/* Portraits: balanced executive scale instead of oversized full-column imagery */
+.hero-visual{min-height:500px!important;max-width:430px!important;width:100%!important;justify-self:center!important}
+.hero-visual picture{display:block;width:100%;height:100%}
+.hero-img{height:500px!important;width:100%!important;object-fit:cover!important}
+.executive-panel picture{display:block;width:min(100%,430px);justify-self:center}
+.executive-panel picture img{width:100%!important;max-height:500px!important;object-fit:cover!important}
 .float-card{padding:14px 16px!important}
 .float-card strong{font-size:18px!important}
 
@@ -99,8 +103,10 @@ html[lang="ar"] .client-card b,html[lang="ar"] .company b,html[lang="ar"] .conta
   .hero h1{font-size:clamp(46px,12vw,64px)!important}
   .hero h2{font-size:25px!important;line-height:1.3!important}
   .hero p{font-size:16px!important;line-height:1.75!important}
-  .hero-visual{min-height:460px!important}
-  .hero-img{height:460px!important;border-radius:28px 28px 80px 28px!important}
+  .hero-visual{min-height:410px!important;max-width:360px!important;margin-inline:auto!important}
+  .hero-img{height:410px!important;border-radius:28px 28px 70px 28px!important}
+  .executive-panel picture{width:min(100%,360px)}
+  .executive-panel picture img{max-height:430px!important}
   .float-one{left:8px!important;bottom:18px!important}
   .float-two{right:8px!important;top:18px!important}
   .stats{grid-template-columns:1fr 1fr!important;margin-bottom:64px!important}
@@ -135,10 +141,12 @@ html[lang="ar"] .client-card b,html[lang="ar"] .company b,html[lang="ar"] .conta
   .pill{font-size:10.5px!important}
   .cta{gap:8px!important;margin-top:24px!important}
   .btn{width:100%!important;min-height:46px!important}
-  .hero-visual{min-height:390px!important}
-  .hero-img{height:390px!important;border-radius:24px 24px 58px 24px!important}
-  .float-card{max-width:150px!important;padding:11px 12px!important}
-  .float-card strong{font-size:16px!important}
+  .hero-visual{min-height:340px!important;max-width:300px!important;margin-inline:auto!important}
+  .hero-img{height:340px!important;border-radius:24px 24px 54px 24px!important}
+  .executive-panel picture{width:min(88%,300px);margin-inline:auto}
+  .executive-panel picture img{max-height:360px!important;border-radius:20px!important}
+  .float-card{max-width:140px!important;padding:10px 11px!important}
+  .float-card strong{font-size:15px!important}
   .float-card span{font-size:10px!important}
   .stats{grid-template-columns:1fr!important;border-radius:18px!important;margin-bottom:54px!important}
   .stat:not(:last-child){border-inline-end:0!important;border-bottom:1px solid rgba(65,57,48,.16)!important}
