@@ -1,0 +1,114 @@
+name: Final QA and SEO cleanup
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/final-qa-fix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply final QA fixes and audit
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re, sys
+          from html.parser import HTMLParser
+          from urllib.parse import urlparse
+
+          css=Path('assets/custom-v12.css')
+          s=css.read_text(encoding='utf-8')
+          # Make the responsive picture/image actually obey the intended portrait dimensions.
+          if '.hero-img picture{display:block;width:100%;height:100%}' not in s:
+              s=s.replace('.hero-img{height:500px!important;width:100%!important;object-fit:cover!important}', '.hero-img{height:500px!important;width:100%!important}\n.hero-img picture{display:block;width:100%;height:100%}\n.hero-img picture img{display:block;width:100%!important;height:100%!important;object-fit:cover!important}')
+          else:
+              s=s.replace('.hero-img{height:500px!important;width:100%!important;object-fit:cover!important}', '.hero-img{height:500px!important;width:100%!important}')
+              if '.hero-img picture img{display:block;width:100%!important;height:100%!important;object-fit:cover!important}' not in s:
+                  s=s.replace('.hero-img picture{display:block;width:100%;height:100%}', '.hero-img picture{display:block;width:100%;height:100%}\n.hero-img picture img{display:block;width:100%!important;height:100%!important;object-fit:cover!important}')
+          # Remove obsolete service-booking fallback now that the HTML/pages are physically gone.
+          s=re.sub(r'\n?/\* Service booking retired sitewide \*/\n?a\[href\*="book-service\.html"\],\.book-highlight,\.article-cta:has\(a\[href\*="book-service\.html"\]\)\{display:none!important;\}\s*', '\n', s)
+          css.write_text(s,encoding='utf-8')
+
+          html_files=list(Path('en').rglob('*.html'))+list(Path('ar').rglob('*.html'))
+          for p in html_files:
+              t=p.read_text(encoding='utf-8')
+              lang='ar' if p.parts[0]=='ar' else 'en'
+              alt='en_US' if lang=='ar' else 'ar_SA'
+              # Cache bust current CSS so the portrait sizing fix reaches Cloudflare/browser immediately.
+              t=re.sub(r'custom-v12\.css\?v=\d+', 'custom-v12.css?v=21', t)
+              # Add reciprocal Open Graph locale where missing.
+              if 'property="og:locale:alternate"' not in t:
+                  marker=f'<meta property="og:locale" content="{"ar_SA" if lang=="ar" else "en_US"}">'
+                  if marker in t:
+                      t=t.replace(marker, marker+f'<meta property="og:locale:alternate" content="{alt}">',1)
+              p.write_text(t,encoding='utf-8')
+
+          # Static link/asset/SEO audit.
+          errors=[]
+          warnings=[]
+          root=Path('.').resolve()
+          class Parser(HTMLParser):
+              def __init__(self):
+                  super().__init__(); self.refs=[]; self.canonical=[]; self.hreflangs=[]; self.title=False; self.desc=False; self.viewport=False
+              def handle_starttag(self,tag,attrs):
+                  a=dict(attrs)
+                  if tag=='a' and a.get('href'): self.refs.append(a['href'])
+                  if tag in ('img','script') and a.get('src'): self.refs.append(a['src'])
+                  if tag=='link' and a.get('href') and a.get('rel') in ('stylesheet','icon'): self.refs.append(a['href'])
+                  if tag=='link' and a.get('rel')=='canonical': self.canonical.append(a.get('href',''))
+                  if tag=='link' and a.get('rel')=='alternate' and a.get('hreflang'): self.hreflangs.append(a.get('hreflang'))
+                  if tag=='meta' and a.get('name')=='description': self.desc=True
+                  if tag=='meta' and a.get('name')=='viewport': self.viewport=True
+                  if tag=='title': self.title=True
+          for p in html_files:
+              parser=Parser(); txt=p.read_text(encoding='utf-8'); parser.feed(txt)
+              if not parser.title: errors.append(f'{p}: missing title')
+              if not parser.desc: errors.append(f'{p}: missing meta description')
+              if not parser.viewport: errors.append(f'{p}: missing viewport')
+              if len(parser.canonical)!=1: errors.append(f'{p}: canonical count {len(parser.canonical)}')
+              for code in ('en','ar','x-default'):
+                  if code not in parser.hreflangs: errors.append(f'{p}: missing hreflang {code}')
+              if 'book-service' in txt.lower(): errors.append(f'{p}: retired booking reference remains')
+              for ref in parser.refs:
+                  if ref.startswith(('#','mailto:','tel:','http://','https://','javascript:')): continue
+                  clean=ref.split('#')[0].split('?')[0]
+                  if not clean: continue
+                  target=(p.parent/clean).resolve()
+                  try: target.relative_to(root)
+                  except ValueError: errors.append(f'{p}: path escapes repo {ref}'); continue
+                  if not target.exists(): errors.append(f'{p}: missing local target {ref}')
+          sm=Path('sitemap.xml').read_text(encoding='utf-8')
+          urls=re.findall(r'<loc>(.*?)</loc>',sm)
+          if len(urls)!=28: errors.append(f'sitemap: expected 28 URLs, got {len(urls)}')
+          if len(urls)!=len(set(urls)): errors.append('sitemap: duplicate URLs')
+          for u in urls:
+              path=urlparse(u).path.lstrip('/')
+              if not Path(path).exists(): errors.append(f'sitemap: missing file for {u}')
+          rob=Path('robots.txt').read_text(encoding='utf-8')
+          if 'Sitemap: https://aymanesam.com/sitemap.xml' not in rob: errors.append('robots: sitemap directive missing')
+
+          print(f'Audited {len(html_files)} HTML pages and {len(urls)} sitemap URLs.')
+          if warnings:
+              print('WARNINGS:'); [print(' -',x) for x in warnings]
+          if errors:
+              print('ERRORS:'); [print(' -',x) for x in errors]
+              sys.exit(1)
+          print('FINAL QA PASS: no broken local links/assets, required SEO basics present, sitemap matches files.')
+          PY
+      - name: Commit final QA cleanup
+        run: |
+          git config user.name "aymanesam90-dot"
+          git config user.email "ayman.esam90@gmail.com"
+          git add assets/custom-v12.css en ar
+          if git diff --cached --quiet; then
+            echo "No changes required"
+          else
+            git commit -m "Complete final technical QA and SEO cleanup [skip ci]"
+            git push
+          fi
