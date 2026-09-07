@@ -1,14 +1,12 @@
 @import url("custom-v12-base.css");
-@import url('https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700;800&display=swap');
 
-/* Arabic typography: Alexandria */
+/* Arabic typography: Alexandria + professional scale */
 html[lang="ar"] body,
 html[lang="ar"] button,
 html[lang="ar"] input,
 html[lang="ar"] textarea,
 html[lang="ar"] select,
-html[lang="ar"] .hero h1,
-html[lang="ar"] .page-hero h1,
 html[lang="ar"] h1,
 html[lang="ar"] h2,
 html[lang="ar"] h3,
@@ -16,7 +14,128 @@ html[lang="ar"] h4,
 html[lang="ar"] h5,
 html[lang="ar"] h6,
 html[lang="ar"] .footer-brand {
-  font-family: 'Alexandria', Arial, sans-serif !important;
+  font-family:'Alexandria',Arial,sans-serif!important;
+}
+
+html[lang="ar"] body{
+  font-size:16px;
+  line-height:1.9;
+  font-weight:400;
+}
+
+html[lang="ar"] .links a{
+  font-size:12px!important;
+  font-weight:600!important;
+  letter-spacing:0!important;
+}
+
+html[lang="ar"] .kicker,
+html[lang="ar"] .eyebrow{
+  font-size:11px!important;
+  font-weight:700!important;
+  letter-spacing:.04em!important;
+}
+
+html[lang="ar"] .hero h1{
+  font-size:clamp(48px,5.4vw,76px)!important;
+  line-height:1.15!important;
+  font-weight:700!important;
+  letter-spacing:-.01em!important;
+  margin:14px 0 20px!important;
+}
+
+html[lang="ar"] .hero h2{
+  font-size:clamp(23px,2.35vw,34px)!important;
+  line-height:1.55!important;
+  font-weight:600!important;
+  max-width:760px!important;
+  margin-bottom:18px!important;
+}
+
+html[lang="ar"] .hero p{
+  font-size:16px!important;
+  line-height:2!important;
+  max-width:760px!important;
+}
+
+html[lang="ar"] .page-hero h1{
+  font-size:clamp(40px,5vw,64px)!important;
+  line-height:1.35!important;
+  font-weight:700!important;
+  letter-spacing:-.01em!important;
+}
+
+html[lang="ar"] .page-hero p{
+  font-size:17px!important;
+  line-height:2!important;
+}
+
+html[lang="ar"] h3{
+  font-size:clamp(30px,3.8vw,48px)!important;
+  line-height:1.45!important;
+  font-weight:700!important;
+  letter-spacing:-.01em!important;
+}
+
+html[lang="ar"] h4{
+  font-size:19px!important;
+  line-height:1.6!important;
+  font-weight:700!important;
+}
+
+html[lang="ar"] .lead{
+  font-size:18px!important;
+  line-height:2!important;
+}
+
+html[lang="ar"] .quote-box{
+  font-size:16px!important;
+  line-height:2!important;
+}
+
+html[lang="ar"] .stat b{
+  font-size:21px!important;
+  line-height:1.45!important;
+  font-weight:700!important;
+}
+
+html[lang="ar"] .stat span,
+html[lang="ar"] .pill,
+html[lang="ar"] .sector,
+html[lang="ar"] .client-card span,
+html[lang="ar"] .article-meta{
+  line-height:1.7!important;
+}
+
+html[lang="ar"] .client-card b,
+html[lang="ar"] .company b,
+html[lang="ar"] .contact-card strong,
+html[lang="ar"] .contact-card a{
+  font-weight:700!important;
+}
+
+html[lang="ar"] .article-page p,
+html[lang="ar"] .article-page li{
+  font-size:17px!important;
+  line-height:2.05!important;
+}
+
+html[lang="ar"] .footer-brand{
+  font-size:24px!important;
+  font-weight:700!important;
+  line-height:1.5!important;
+}
+
+@media(max-width:700px){
+  html[lang="ar"] .links a{font-size:13px!important}
+  html[lang="ar"] .hero h1{font-size:44px!important;line-height:1.2!important}
+  html[lang="ar"] .hero h2{font-size:22px!important;line-height:1.6!important}
+  html[lang="ar"] .hero p{font-size:15px!important}
+  html[lang="ar"] .page-hero h1{font-size:38px!important}
+  html[lang="ar"] h3{font-size:30px!important}
+  html[lang="ar"] .lead{font-size:16px!important}
+  html[lang="ar"] .article-page p,
+  html[lang="ar"] .article-page li{font-size:16px!important}
 }
 
 /* Service booking retired sitewide */
