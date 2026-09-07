@@ -19,7 +19,6 @@ html[lang="ar"] h4,
 html[lang="ar"] h5,
 html[lang="ar"] h6,
 html[lang="ar"] .footer-brand{font-family:'Alexandria',Arial,sans-serif!important}
-
 body{font-size:16px;line-height:1.75}
 .wrap{width:min(1180px,92%)}
 .nav{min-height:76px}
@@ -34,14 +33,21 @@ body{font-size:16px;line-height:1.75}
 .hero .cta{margin-top:27px!important}
 .btn{min-height:46px!important;padding:11px 17px!important;font-size:13px!important}
 .pill{font-size:11px!important;padding:7px 10px!important}
-/* Portraits: balanced executive scale instead of oversized full-column imagery */
-.hero-visual{min-height:500px!important;max-width:430px!important;width:100%!important;justify-self:center!important}
-.hero-visual picture{display:block;width:100%;height:100%}
-.hero-img{height:500px!important;width:100%!important}
+
+/* ===== Hero portrait ===== */
+.hero-visual{min-height:470px!important;max-width:390px!important;width:100%!important;justify-self:center!important;position:relative!important}
+.hero-img{height:470px!important;width:100%!important;overflow:hidden!important;border-radius:30px 30px 76px 30px!important;background:#d8d0c2!important}
+.hero-img picture{display:block!important;width:100%!important;height:100%!important}
+.hero-img picture img{display:block!important;width:100%!important;height:100%!important;object-fit:cover!important;object-position:center 34%!important;border:0!important;margin:0!important;padding:0!important}
 .executive-panel picture{display:block;width:min(100%,430px);justify-self:center}
 .executive-panel picture img{width:100%!important;max-height:500px!important;object-fit:cover!important}
-.float-card{padding:14px 16px!important}
-.float-card strong{font-size:18px!important}
+
+/* Smaller, lighter metric badges so the portrait remains the visual focus */
+.float-card{width:auto!important;min-width:0!important;max-width:150px!important;padding:10px 12px!important;border-radius:15px!important;box-shadow:0 8px 24px rgba(44,39,33,.10)!important}
+.float-card strong{font-size:15px!important;line-height:1.15!important}
+.float-card span{font-size:9.5px!important;line-height:1.35!important;margin-top:3px!important}
+.float-one{left:-18px!important;bottom:18px!important}
+.float-two{right:-18px!important;top:24px!important}
 
 .stats{margin-bottom:88px!important}
 .stat{padding:22px!important}
@@ -73,7 +79,6 @@ h4{font-size:19px!important;line-height:1.35!important}
 .footer-grid p,.footer-grid a{font-size:13px!important;line-height:1.6!important}
 .site-footer{padding-top:50px!important}
 
-/* ===== Arabic scale ===== */
 html[lang="ar"] body{line-height:1.9;font-weight:400}
 html[lang="ar"] .links a{font-weight:600!important;letter-spacing:0!important}
 html[lang="ar"] .kicker,html[lang="ar"] .eyebrow{letter-spacing:.035em!important;font-weight:700!important}
@@ -91,7 +96,6 @@ html[lang="ar"] .article-page p,html[lang="ar"] .article-page li{font-size:16.5p
 html[lang="ar"] .article-page h2{font-size:26px!important;line-height:1.6!important}
 html[lang="ar"] .client-card b,html[lang="ar"] .company b,html[lang="ar"] .contact-card strong,html[lang="ar"] .contact-card a{font-weight:700!important}
 
-/* ===== Tablet / mobile ===== */
 @media(max-width:850px){
   .nav{min-height:68px!important;padding:10px 16px!important}
   .brand{font-size:13px!important}
@@ -103,12 +107,15 @@ html[lang="ar"] .client-card b,html[lang="ar"] .company b,html[lang="ar"] .conta
   .hero h1{font-size:clamp(46px,12vw,64px)!important}
   .hero h2{font-size:25px!important;line-height:1.3!important}
   .hero p{font-size:16px!important;line-height:1.75!important}
-  .hero-visual{min-height:410px!important;max-width:360px!important;margin-inline:auto!important}
-  .hero-img{height:410px!important;border-radius:28px 28px 70px 28px!important}
+  .hero-visual{min-height:390px!important;max-width:330px!important;margin-inline:auto!important}
+  .hero-img{height:390px!important;border-radius:26px 26px 64px 26px!important}
+  .float-card{max-width:132px!important;padding:9px 10px!important}
+  .float-card strong{font-size:14px!important}
+  .float-card span{font-size:9px!important}
+  .float-one{left:-8px!important;bottom:14px!important}
+  .float-two{right:-8px!important;top:16px!important}
   .executive-panel picture{width:min(100%,360px)}
   .executive-panel picture img{max-height:430px!important}
-  .float-one{left:8px!important;bottom:18px!important}
-  .float-two{right:8px!important;top:18px!important}
   .stats{grid-template-columns:1fr 1fr!important;margin-bottom:64px!important}
   .stat{padding:18px!important}
   section,.section{padding-top:64px!important;padding-bottom:64px!important}
@@ -141,13 +148,15 @@ html[lang="ar"] .client-card b,html[lang="ar"] .company b,html[lang="ar"] .conta
   .pill{font-size:10.5px!important}
   .cta{gap:8px!important;margin-top:24px!important}
   .btn{width:100%!important;min-height:46px!important}
-  .hero-visual{min-height:340px!important;max-width:300px!important;margin-inline:auto!important}
-  .hero-img{height:340px!important;border-radius:24px 24px 54px 24px!important}
+  .hero-visual{min-height:320px!important;max-width:280px!important;margin-inline:auto!important}
+  .hero-img{height:320px!important;border-radius:22px 22px 48px 22px!important}
+  .float-card{max-width:116px!important;padding:8px 9px!important;border-radius:12px!important}
+  .float-card strong{font-size:12.5px!important}
+  .float-card span{font-size:8.5px!important}
+  .float-one{left:-2px!important;bottom:10px!important}
+  .float-two{right:-2px!important;top:12px!important}
   .executive-panel picture{width:min(88%,300px);margin-inline:auto}
   .executive-panel picture img{max-height:360px!important;border-radius:20px!important}
-  .float-card{max-width:140px!important;padding:10px 11px!important}
-  .float-card strong{font-size:15px!important}
-  .float-card span{font-size:10px!important}
   .stats{grid-template-columns:1fr!important;border-radius:18px!important;margin-bottom:54px!important}
   .stat:not(:last-child){border-inline-end:0!important;border-bottom:1px solid rgba(65,57,48,.16)!important}
   section,.section{padding-top:54px!important;padding-bottom:54px!important}
@@ -178,4 +187,3 @@ html[lang="ar"] .client-card b,html[lang="ar"] .company b,html[lang="ar"] .conta
   html[lang="ar"] .lead{font-size:16px!important;line-height:2!important}
   html[lang="ar"] .article-page p,html[lang="ar"] .article-page li{font-size:16px!important;line-height:2!important}
 }
-
