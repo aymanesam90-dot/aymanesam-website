@@ -19,3 +19,4 @@ c=cssp.read_text(encoding='utf-8')
 if 'V20 trust and personal brand' not in c:
     c+='''\n/* V20 trust and personal brand */\n.client-card{justify-content:center!important}.client-card b{font-size:17px!important}.client-card span{margin-top:5px}.client-section .client-note{max-width:820px}.stats{border:1px solid rgba(181,138,82,.12)}.stat b{color:var(--deep)}.stat span{line-height:1.45}.hero .float-card strong{letter-spacing:-.02em}.hero .float-card span{line-height:1.35}\n'''
 cssp.write_text(c,encoding='utf-8')
+# trigger run
