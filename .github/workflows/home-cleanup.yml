@@ -1,0 +1,40 @@
+name: Homepage cleanup
+on:
+  push:
+    paths:
+      - '.github/workflows/home-cleanup.yml'
+permissions:
+  contents: write
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Remove duplicated homepage sections
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          targets = {
+            'en/index.html': ['Core Expertise','Work Experience','Finance Impact','Insights'],
+            'ar/index.html': ['مجالات الخبرة','الخبرة العملية','الأثر المالي','المقالات'],
+          }
+
+          for file, labels in targets.items():
+              p = Path(file)
+              s = p.read_text(encoding='utf-8')
+              for label in labels:
+                  pattern = rf'<section(?: class="[^"]*")?>(?:(?!</section>).)*?<div class="eyebrow">{re.escape(label)}</div>(?:(?!</section>).)*?</section>'
+                  s, n = re.subn(pattern, '', s, count=1, flags=re.S)
+                  if n == 0:
+                      raise SystemExit(f'Could not find section {label!r} in {file}')
+              p.write_text(s, encoding='utf-8')
+          PY
+      - name: Commit homepage cleanup
+        run: |
+          git config user.name "Ayman Esam Site Automation"
+          git config user.email "actions@users.noreply.github.com"
+          git add en/index.html ar/index.html
+          git diff --cached --quiet || git commit -m "Simplify homepages and remove duplicated tab content [skip ci]"
+          git push
