@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - '.github/workflows/seo-mobile-upgrade.yml'
+      - 'tools/seo_mobile_upgrade.py'
 permissions:
   contents: write
 jobs:
