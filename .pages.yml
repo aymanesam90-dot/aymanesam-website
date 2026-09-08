@@ -3,16 +3,84 @@ media:
   output: /assets
 
 content:
-  - name: about-en
+  - name: about-en-settings
     label: About — English
     type: file
-    path: en/about.html
-    format: code
-  - name: about-ar
+    path: content/about-en.json
+    format: json
+    fields:
+      - name: hero_title
+        label: Main title
+        type: string
+      - name: hero_intro
+        label: Intro
+        type: text
+      - name: bio_primary
+        label: Experience summary
+        type: text
+      - name: bio_secondary
+        label: Objective
+        type: text
+      - name: quote
+        label: Finance quote
+        type: text
+      - name: location
+        label: Location
+        type: string
+      - name: current_scope
+        label: Current scope
+        type: text
+      - name: core_focus
+        label: Core focus
+        type: text
+      - name: events_intro
+        label: Events introduction
+        type: text
+      - name: leap_year
+        label: LEAP year
+        type: string
+      - name: seamless_year
+        label: Seamless year
+        type: string
+  - name: about-ar-settings
     label: About — العربية
     type: file
-    path: ar/about.html
-    format: code
+    path: content/about-ar.json
+    format: json
+    fields:
+      - name: hero_title
+        label: العنوان الرئيسي
+        type: string
+      - name: hero_intro
+        label: المقدمة
+        type: text
+      - name: bio_primary
+        label: ملخص الخبرة
+        type: text
+      - name: bio_secondary
+        label: الهدف المهني
+        type: text
+      - name: quote
+        label: العبارة المالية
+        type: text
+      - name: location
+        label: الموقع
+        type: string
+      - name: current_scope
+        label: النطاق الحالي
+        type: text
+      - name: core_focus
+        label: التركيز الأساسي
+        type: text
+      - name: events_intro
+        label: مقدمة الفعاليات
+        type: text
+      - name: leap_year
+        label: سنة LEAP
+        type: string
+      - name: seamless_year
+        label: سنة Seamless
+        type: string
   - name: insights-en
     label: Insights — English
     type: collection
