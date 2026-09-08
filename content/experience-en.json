@@ -1,0 +1,12 @@
+{
+  "hero_title":"Finance leadership across multiple companies and sectors.",
+  "hero_intro":"More than 13 years of progression from accounting execution to group-level financial control, planning, governance and transformation.",
+  "jobs":[
+    {"period":"2025 — Present","title":"Group Financial Controller","summary":"Financial oversight across six companies, with responsibility spanning planning, reporting, controls, cash flow, performance management and finance transformation."},
+    {"period":"2024 — Present","title":"Financial Controller — Wheels Bikes","summary":"Financial control and management reporting for Wheels Bikes, including performance analysis, budgeting, cash flow, inventory oversight, reconciliations and finance process improvement."},
+    {"period":"2020 — Present","title":"Accounting Manager — Wheels Bikes","summary":"Led core accounting operations, month-end closing, reconciliations, inventory and reporting activities while strengthening processes and controls."},
+    {"period":"2018 — 2020","title":"Senior Accountant — Bahrya Restaurants","summary":"Handled senior accounting responsibilities supporting financial reporting and operational accounting."},
+    {"period":"2015 — 2017","title":"General Accountant — Roken Al-Jamal","summary":"Managed general accounting activities and day-to-day financial records."},
+    {"period":"2012 — 2014","title":"Accountant — Emaar","summary":"Built early-career accounting experience across core transactional and reporting activities."}
+  ]
+}
