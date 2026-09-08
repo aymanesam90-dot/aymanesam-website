@@ -1,0 +1,15 @@
+{
+  "hero_title": "End-to-end finance leadership from planning to transformation.",
+  "hero_intro": "Practical expertise across financial planning, control, liquidity, reporting and systems — focused on stronger business decisions.",
+  "cards": [
+    {"title":"FP&A & Performance Management","description":"Budgeting, rolling forecasts, scenario planning, KPI analysis, variance analysis and management decision support."},
+    {"title":"Financial Control & Governance","description":"Month-end discipline, reconciliations, internal controls, compliance, reporting quality and audit readiness."},
+    {"title":"Cash Flow & Treasury","description":"Cash forecasting, working capital, collections, payment planning, liquidity visibility and treasury controls."},
+    {"title":"Cost & Profitability","description":"Cost control, margin analysis, inventory oversight, branch performance and operational profitability."},
+    {"title":"IFRS & Financial Reporting","description":"Financial statement review, accounting policy discipline and management reporting aligned with IFRS principles."},
+    {"title":"ERP & Finance Transformation","description":"ERP implementation, process redesign, automation and integration to improve finance speed, accuracy and scalability."},
+    {"title":"Strategic Business Partnering","description":"Turning finance analysis into actions for management, operations and board-level decision making."},
+    {"title":"Multi-Entity Finance","description":"Financial oversight across multiple companies, sectors, accounting teams and operating models."},
+    {"title":"Digital Finance & Automation","description":"Using modern finance systems, analytics and AI-enabled workflows to reduce reporting time and improve control."}
+  ]
+}
