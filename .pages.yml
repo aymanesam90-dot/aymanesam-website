@@ -3,6 +3,17 @@ media:
   output: /assets
 
 content:
+  - name: home-en
+    label: Home — English
+    type: file
+    path: en/index.html
+    format: code
+  - name: home-ar
+    label: Home — العربية
+    type: file
+    path: ar/index.html
+    format: code
+
   - name: about-en-settings
     label: About — English
     type: file
@@ -81,8 +92,63 @@ content:
       - name: seamless_year
         label: سنة Seamless
         type: string
+
+  - name: expertise-en
+    label: Expertise — English
+    type: file
+    path: en/expertise.html
+    format: code
+  - name: expertise-ar
+    label: Expertise — العربية
+    type: file
+    path: ar/expertise.html
+    format: code
+
+  - name: experience-en
+    label: Experience — English
+    type: file
+    path: en/experience.html
+    format: code
+  - name: experience-ar
+    label: Experience — العربية
+    type: file
+    path: ar/experience.html
+    format: code
+
+  - name: education-en
+    label: Education — English
+    type: file
+    path: en/education.html
+    format: code
+  - name: education-ar
+    label: Education — العربية
+    type: file
+    path: ar/education.html
+    format: code
+
+  - name: certifications-en
+    label: Certifications — English
+    type: file
+    path: en/certifications.html
+    format: code
+  - name: certifications-ar
+    label: Certifications — العربية
+    type: file
+    path: ar/certifications.html
+    format: code
+
+  - name: insights-index-en
+    label: Insights Page — English
+    type: file
+    path: en/insights.html
+    format: code
+  - name: insights-index-ar
+    label: Insights Page — العربية
+    type: file
+    path: ar/insights.html
+    format: code
   - name: insights-en
-    label: Insights — English
+    label: Insight Articles — English
     type: collection
     path: en/insights
     format: code
@@ -90,13 +156,25 @@ content:
     view:
       layout: list
   - name: insights-ar
-    label: Insights — العربية
+    label: Insight Articles — العربية
     type: collection
     path: ar/insights
     format: code
     subfolders: false
     view:
       layout: list
+
+  - name: contact-en
+    label: Contact — English
+    type: file
+    path: en/contact.html
+    format: code
+  - name: contact-ar
+    label: Contact — العربية
+    type: file
+    path: ar/contact.html
+    format: code
+
   - name: robots
     label: robots.txt
     type: file
