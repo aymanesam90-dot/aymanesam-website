@@ -1,10 +1,9 @@
-name: Sync About CMS
+name: Sync Pages CMS
 
 on:
   push:
     paths:
-      - 'content/about-en.json'
-      - 'content/about-ar.json'
+      - 'content/*.json'
 
 permissions:
   contents: write
@@ -14,74 +13,134 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Sync structured About content into HTML
+      - name: Sync structured CMS content into HTML
         shell: python
         run: |
           import json, re, html
           from pathlib import Path
 
-          def esc(value):
-              return html.escape(str(value), quote=False)
+          def esc(v): return html.escape(str(v), quote=False)
+          def load(p): return json.loads(Path(p).read_text(encoding='utf-8'))
+          def read(p): return Path(p).read_text(encoding='utf-8')
+          def write(p,t): Path(p).write_text(t, encoding='utf-8')
+          def one(t, pat, repl, label):
+              ntext, n = re.subn(pat, repl, t, count=1, flags=re.S)
+              if n != 1: raise SystemExit(f'{label}: expected 1 match, found {n}')
+              return ntext
+          def hero(t,d):
+              t=one(t,r'(<section class="page-hero"><div class="wrap"><div class="eyebrow">.*?</div><h1>).*?(</h1><p>)',lambda m:m.group(1)+esc(d['hero_title'])+m.group(2),'hero title')
+              t=one(t,r'(<section class="page-hero"><div class="wrap"><div class="eyebrow">.*?</div><h1>.*?</h1><p>).*?(</p></div></section>)',lambda m:m.group(1)+esc(d['hero_intro'])+m.group(2),'hero intro')
+              return t
 
-          def replace_one(text, pattern, replacement, label):
-              new, n = re.subn(pattern, replacement, text, count=1, flags=re.S)
-              if n != 1:
-                  raise SystemExit(f'Could not update {label}: found {n} matches')
-              return new
+          def sync_about(path,data_path,lang):
+              t=read(path); d=load(data_path); t=hero(t,d)
+              t=one(t,r'(<div class="feature-grid"><div><p class="lead">).*?(</p><p class="lead">)',lambda m:m.group(1)+esc(d['bio_primary'])+m.group(2),'about bio1')
+              t=one(t,r'(<div class="feature-grid"><div><p class="lead">.*?</p><p class="lead">).*?(</p><div class="quote-box">)',lambda m:m.group(1)+esc(d['bio_secondary'])+m.group(2),'about bio2')
+              t=one(t,r'(<div class="quote-box">).*?(</div></div><div class="mini-list">)',lambda m:m.group(1)+esc(d['quote'])+m.group(2),'about quote')
+              labels=['Location','Current Scope','Core Focus'] if lang=='en' else ['الموقع','النطاق الحالي','التركيز الأساسي']
+              vals=[d['location'],d['current_scope'],d['core_focus']]
+              for label,val in zip(labels,vals):
+                  t=one(t,rf'(<div class="mini-item"><b>{re.escape(label)}</b><span>).*?(</span></div>)',lambda m,v=val:m.group(1)+esc(v)+m.group(2),label)
+              eyebrow='Executive Representation' if lang=='en' else 'التمثيل التنفيذي'
+              t=one(t,rf'(<section class="events-section"><div class="section-head"><div><div class="eyebrow">{re.escape(eyebrow)}</div><h3>.*?</h3></div><p>).*?(</p></div><div class="event-block">)',lambda m:m.group(1)+esc(d['events_intro'])+m.group(2),'events intro')
+              t=one(t,r'(<span class="event-year">)\d{4}(</span><h4>LEAP</h4>)',lambda m:m.group(1)+esc(d['leap_year'])+m.group(2),'leap year')
+              t=one(t,r'(<span class="event-year">)\d{4}(</span><h4>Seamless</h4>)',lambda m:m.group(1)+esc(d['seamless_year'])+m.group(2),'seamless year')
+              t=re.sub(r'LEAP \d{4}','LEAP '+str(d['leap_year']),t)
+              t=re.sub(r'Seamless \d{4}','Seamless '+str(d['seamless_year']),t)
+              write(path,t)
 
-          def sync(path, data_path, lang):
-              p = Path(path)
-              text = p.read_text(encoding='utf-8')
-              d = json.loads(Path(data_path).read_text(encoding='utf-8'))
+          def sync_home(path,data_path,lang):
+              t=read(path); d=load(data_path)
+              t=one(t,r'(<div class="hero-copy"><div class="kicker">).*?(</div><h1>)',lambda m:m.group(1)+esc(d['kicker'])+m.group(2),'home kicker')
+              parts=str(d['name']).split(' ',1); name_html=esc(parts[0])+((' <span class="accent">'+esc(parts[1])+'</span>') if len(parts)>1 else '')
+              t=one(t,r'(<div class="hero-copy"><div class="kicker">.*?</div><h1>).*?(</h1><h2>)',lambda m:m.group(1)+name_html+m.group(2),'home name')
+              t=one(t,r'(<div class="hero-copy">.*?<h1>.*?</h1><h2>).*?(</h2><p>)',lambda m:m.group(1)+esc(d['headline'])+m.group(2),'home headline')
+              t=one(t,r'(<div class="hero-copy">.*?<h2>.*?</h2><p>).*?(</p><div class="trust-strip">)',lambda m:m.group(1)+esc(d['intro'])+m.group(2),'home intro')
+              vals=[d['metric_sales'],d['metric_experience'],d['metric_companies'],d['metric_sectors']]
+              matches=list(re.finditer(r'(<div class="stat"><b>).*?(</b><span>)',t,re.S))
+              if len(matches)<4: raise SystemExit('home stats missing')
+              for i in range(3,-1,-1):
+                  m=matches[i]; t=t[:m.start()]+m.group(1)+esc(vals[i])+m.group(2)+t[m.end():]
+              t=one(t,r'(<div class="float-card float-one"><strong>).*?(</strong>)',lambda m:m.group(1)+esc(d['metric_sales'])+m.group(2),'float sales')
+              t=one(t,r'(<div class="float-card float-two"><strong>).*?(</strong>)',lambda m:m.group(1)+esc(d['metric_experience'])+m.group(2),'float exp')
+              t=one(t,r'(<div class="executive-copy"><div class="eyebrow">.*?</div><h3>).*?(</h3><p class="lead">)',lambda m:m.group(1)+esc(d['about_title'])+m.group(2),'home about title')
+              t=one(t,r'(<div class="executive-copy">.*?<h3>.*?</h3><p class="lead">).*?(</p><div class="quote-box">)',lambda m:m.group(1)+esc(d['about_intro'])+m.group(2),'home about intro')
+              t=one(t,r'(<div class="executive-copy">.*?<div class="quote-box">).*?(</div><div class="cta">)',lambda m:m.group(1)+esc(d['about_quote'])+m.group(2),'home about quote')
+              eyebrow='Industry Exposure' if lang=='en' else 'القطاعات'
+              t=one(t,rf'(<div class="eyebrow">{re.escape(eyebrow)}</div><h3>).*?(</h3><div class="sector-strip)',lambda m:m.group(1)+esc(d['industry_title'])+m.group(2),'industry title')
+              write(path,t)
 
-              text = replace_one(text,
-                  r'(<section class="page-hero"><div class="wrap"><div class="eyebrow">.*?</div><h1>).*?(</h1><p>)',
-                  lambda m: m.group(1)+esc(d['hero_title'])+m.group(2), 'hero title')
-              text = replace_one(text,
-                  r'(<section class="page-hero"><div class="wrap"><div class="eyebrow">.*?</div><h1>.*?</h1><p>).*?(</p></div></section>)',
-                  lambda m: m.group(1)+esc(d['hero_intro'])+m.group(2), 'hero intro')
-              text = replace_one(text,
-                  r'(<div class="feature-grid"><div><p class="lead">).*?(</p><p class="lead">)',
-                  lambda m: m.group(1)+esc(d['bio_primary'])+m.group(2), 'primary bio')
-              text = replace_one(text,
-                  r'(<div class="feature-grid"><div><p class="lead">.*?</p><p class="lead">).*?(</p><div class="quote-box">)',
-                  lambda m: m.group(1)+esc(d['bio_secondary'])+m.group(2), 'secondary bio')
-              text = replace_one(text,
-                  r'(<div class="quote-box">).*?(</div></div><div class="mini-list">)',
-                  lambda m: m.group(1)+esc(d['quote'])+m.group(2), 'quote')
+          def sync_expertise(path,data_path):
+              t=read(path); d=load(data_path); t=hero(t,d)
+              pat=r'(<div class="card"><span class="num">\d+</span><h4>).*?(</h4><p>).*?(</p></div>)'
+              ms=list(re.finditer(pat,t,re.S))
+              if len(ms)!=len(d['cards']): raise SystemExit(f'expertise cards {len(ms)} != {len(d["cards"])}')
+              for m,c in zip(reversed(ms),reversed(d['cards'])):
+                  rep=m.group(1)+esc(c['title'])+m.group(2)+esc(c['description'])+m.group(3); t=t[:m.start()]+rep+t[m.end():]
+              write(path,t)
 
-              labels = ['Location','Current Scope','Core Focus'] if lang == 'en' else ['الموقع','النطاق الحالي','التركيز الأساسي']
-              vals = [d['location'], d['current_scope'], d['core_focus']]
-              for label, value in zip(labels, vals):
-                  pattern = rf'(<div class="mini-item"><b>{re.escape(label)}</b><span>).*?(</span></div>)'
-                  text = replace_one(text, pattern, lambda m, v=value: m.group(1)+esc(v)+m.group(2), label)
+          def sync_experience(path,data_path):
+              t=read(path); d=load(data_path); t=hero(t,d)
+              pat=r'(<div class="job"><div class="when">).*?(</div><div><h4>).*?(</h4><p>).*?(</p>)'
+              ms=list(re.finditer(pat,t,re.S))
+              if len(ms)!=len(d['jobs']): raise SystemExit(f'jobs {len(ms)} != {len(d["jobs"])}')
+              for m,j in zip(reversed(ms),reversed(d['jobs'])):
+                  rep=m.group(1)+esc(j['period'])+m.group(2)+esc(j['title'])+m.group(3)+esc(j['summary'])+m.group(4); t=t[:m.start()]+rep+t[m.end():]
+              write(path,t)
 
-              eyebrow = 'Executive Representation' if lang == 'en' else 'التمثيل التنفيذي'
-              text = replace_one(text,
-                  rf'(<section class="events-section"><div class="section-head"><div><div class="eyebrow">{re.escape(eyebrow)}</div><h3>.*?</h3></div><p>).*?(</p></div><div class="event-block">)',
-                  lambda m: m.group(1)+esc(d['events_intro'])+m.group(2), 'events intro')
+          def sync_education(path,data_path,lang):
+              t=read(path); d=load(data_path); t=hero(t,d)
+              title=esc(d['degree'])+' — '+esc(d['major'])
+              t=one(t,r'(<div class="feature-grid"><div><div class="eyebrow">.*?</div><h3>).*?(</h3><p class="lead">)',lambda m:m.group(1)+title+m.group(2),'education degree title')
+              detail=('<strong>'+esc(d['university'])+'</strong><br>Faculty of Commerce · '+esc(d['major'])+'<br>Egypt · Graduated '+esc(d['graduation'])) if lang=='en' else ('<strong>'+esc(d['university'])+'</strong><br>كلية التجارة · شعبة '+esc(d['major'])+'<br>مصر · سنة التخرج '+esc(d['graduation']))
+              t=one(t,r'(<div class="feature-grid">.*?<p class="lead">).*?(</p><div class="quote-box">)',lambda m:m.group(1)+detail+m.group(2),'education detail')
+              t=one(t,r'(<div class="feature-grid">.*?<div class="quote-box">).*?(</div></div><div class="mini-list">)',lambda m:m.group(1)+esc(d['quote'])+m.group(2),'education quote')
+              labels=['Degree','Major','University','Graduation'] if lang=='en' else ['المؤهل','التخصص','الجامعة','سنة التخرج']
+              vals=[d['degree'],d['major'],d['university'],d['graduation']]
+              for label,val in zip(labels,vals):
+                  t=one(t,rf'(<div class="mini-item"><b>{re.escape(label)}</b><span>).*?(</span></div>)',lambda m,v=val:m.group(1)+esc(v)+m.group(2),label)
+              write(path,t)
 
-              text = replace_one(text,
-                  r'(<span class="event-year">)\d{4}(</span><h4>LEAP</h4>)',
-                  lambda m: m.group(1)+esc(d['leap_year'])+m.group(2), 'LEAP year')
-              text = replace_one(text,
-                  r'(<span class="event-year">)\d{4}(</span><h4>Seamless</h4>)',
-                  lambda m: m.group(1)+esc(d['seamless_year'])+m.group(2), 'Seamless year')
+          def sync_certifications(path,data_path):
+              t=read(path); d=load(data_path); t=hero(t,d)
+              pat=r'(<div class="card"><span class="num">).*?(</span><h4>).*?(</h4><p>).*?(</p></div>)'
+              ms=list(re.finditer(pat,t,re.S))[:3]
+              if len(ms)!=3: raise SystemExit('credential cards missing')
+              for m,c in zip(reversed(ms),reversed(d['credentials'])):
+                  rep=m.group(1)+esc(c['code'])+m.group(2)+esc(c['title'])+m.group(3)+esc(c['description'])+m.group(4); t=t[:m.start()]+rep+t[m.end():]
+              t=one(t,r'(<div class="quote-box">).*?(</div></div></div></main>)',lambda m:m.group(1)+esc(d['quote'])+m.group(2),'cert quote')
+              write(path,t)
 
-              text = re.sub(r'LEAP \d{4}', 'LEAP '+str(d['leap_year']), text)
-              text = re.sub(r'Seamless \d{4}', 'Seamless '+str(d['seamless_year']), text)
-              p.write_text(text, encoding='utf-8')
+          def sync_contact(path,data_path):
+              t=read(path); d=load(data_path); t=hero(t,d)
+              mail='mailto:'+d['email']; tel='tel:'+re.sub(r'\s+','',d['mobile'])
+              t=re.sub(r'href="mailto:[^"]+">[^<]+</a>',f'href="{mail}">{esc(d["email"])}</a>',t)
+              t=re.sub(r'href="tel:[^"]+">[^<]+</a>',f'href="{tel}">{esc(d["mobile"])}</a>',t)
+              t=one(t,r'(<div class="contact-card"><small>LinkedIn</small><a href=").*?(" target="_blank" rel="noopener">).*?(</a></div>)',lambda m:m.group(1)+d['linkedin_url']+m.group(2)+esc(d['linkedin_label'])+m.group(3),'linkedin')
+              t=one(t,r'(<div class="contact-card"><small>(?:Location|الموقع)</small><strong>).*?(</strong></div>)',lambda m:m.group(1)+esc(d['location'])+m.group(2),'location')
+              t=re.sub(r'href="https://www\.linkedin\.com/in/aymanisam/"',f'href="{d["linkedin_url"]}"',t)
+              write(path,t)
 
-          sync('en/about.html', 'content/about-en.json', 'en')
-          sync('ar/about.html', 'content/about-ar.json', 'ar')
-      - name: Commit generated About pages
+          pairs=[
+            ('home',sync_home,'en/index.html','content/home-en.json','en'),('home',sync_home,'ar/index.html','content/home-ar.json','ar'),
+            ('about',sync_about,'en/about.html','content/about-en.json','en'),('about',sync_about,'ar/about.html','content/about-ar.json','ar'),
+            ('expertise',sync_expertise,'en/expertise.html','content/expertise-en.json',None),('expertise',sync_expertise,'ar/expertise.html','content/expertise-ar.json',None),
+            ('experience',sync_experience,'en/experience.html','content/experience-en.json',None),('experience',sync_experience,'ar/experience.html','content/experience-ar.json',None),
+            ('education',sync_education,'en/education.html','content/education-en.json','en'),('education',sync_education,'ar/education.html','content/education-ar.json','ar'),
+            ('certifications',sync_certifications,'en/certifications.html','content/certifications-en.json',None),('certifications',sync_certifications,'ar/certifications.html','content/certifications-ar.json',None),
+            ('contact',sync_contact,'en/contact.html','content/contact-en.json',None),('contact',sync_contact,'ar/contact.html','content/contact-ar.json',None)
+          ]
+          for _,fn,path,data,arg in pairs:
+              if arg is None: fn(path,data)
+              else: fn(path,data,arg)
+      - name: Commit generated pages
         run: |
-          if git diff --quiet -- en/about.html ar/about.html; then
+          if git diff --quiet -- en ar; then
             echo "No generated changes"
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add en/about.html ar/about.html
-          git commit -m "Sync About content from Pages CMS [skip ci]"
+          git add en ar
+          git commit -m "Sync site content from Pages CMS [skip ci]"
           git push
