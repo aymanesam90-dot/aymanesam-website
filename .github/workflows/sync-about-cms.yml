@@ -1,0 +1,87 @@
+name: Sync About CMS
+
+on:
+  push:
+    paths:
+      - 'content/about-en.json'
+      - 'content/about-ar.json'
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Sync structured About content into HTML
+        shell: python
+        run: |
+          import json, re, html
+          from pathlib import Path
+
+          def esc(value):
+              return html.escape(str(value), quote=False)
+
+          def replace_one(text, pattern, replacement, label):
+              new, n = re.subn(pattern, replacement, text, count=1, flags=re.S)
+              if n != 1:
+                  raise SystemExit(f'Could not update {label}: found {n} matches')
+              return new
+
+          def sync(path, data_path, lang):
+              p = Path(path)
+              text = p.read_text(encoding='utf-8')
+              d = json.loads(Path(data_path).read_text(encoding='utf-8'))
+
+              text = replace_one(text,
+                  r'(<section class="page-hero"><div class="wrap"><div class="eyebrow">.*?</div><h1>).*?(</h1><p>)',
+                  lambda m: m.group(1)+esc(d['hero_title'])+m.group(2), 'hero title')
+              text = replace_one(text,
+                  r'(<section class="page-hero"><div class="wrap"><div class="eyebrow">.*?</div><h1>.*?</h1><p>).*?(</p></div></section>)',
+                  lambda m: m.group(1)+esc(d['hero_intro'])+m.group(2), 'hero intro')
+              text = replace_one(text,
+                  r'(<div class="feature-grid"><div><p class="lead">).*?(</p><p class="lead">)',
+                  lambda m: m.group(1)+esc(d['bio_primary'])+m.group(2), 'primary bio')
+              text = replace_one(text,
+                  r'(<div class="feature-grid"><div><p class="lead">.*?</p><p class="lead">).*?(</p><div class="quote-box">)',
+                  lambda m: m.group(1)+esc(d['bio_secondary'])+m.group(2), 'secondary bio')
+              text = replace_one(text,
+                  r'(<div class="quote-box">).*?(</div></div><div class="mini-list">)',
+                  lambda m: m.group(1)+esc(d['quote'])+m.group(2), 'quote')
+
+              labels = ['Location','Current Scope','Core Focus'] if lang == 'en' else ['الموقع','النطاق الحالي','التركيز الأساسي']
+              vals = [d['location'], d['current_scope'], d['core_focus']]
+              for label, value in zip(labels, vals):
+                  pattern = rf'(<div class="mini-item"><b>{re.escape(label)}</b><span>).*?(</span></div>)'
+                  text = replace_one(text, pattern, lambda m, v=value: m.group(1)+esc(v)+m.group(2), label)
+
+              eyebrow = 'Executive Representation' if lang == 'en' else 'التمثيل التنفيذي'
+              text = replace_one(text,
+                  rf'(<section class="events-section"><div class="section-head"><div><div class="eyebrow">{re.escape(eyebrow)}</div><h3>.*?</h3></div><p>).*?(</p></div><div class="event-block">)',
+                  lambda m: m.group(1)+esc(d['events_intro'])+m.group(2), 'events intro')
+
+              text = replace_one(text,
+                  r'(<span class="event-year">)\d{4}(</span><h4>LEAP</h4>)',
+                  lambda m: m.group(1)+esc(d['leap_year'])+m.group(2), 'LEAP year')
+              text = replace_one(text,
+                  r'(<span class="event-year">)\d{4}(</span><h4>Seamless</h4>)',
+                  lambda m: m.group(1)+esc(d['seamless_year'])+m.group(2), 'Seamless year')
+
+              text = re.sub(r'LEAP \d{4}', 'LEAP '+str(d['leap_year']), text)
+              text = re.sub(r'Seamless \d{4}', 'Seamless '+str(d['seamless_year']), text)
+              p.write_text(text, encoding='utf-8')
+
+          sync('en/about.html', 'content/about-en.json', 'en')
+          sync('ar/about.html', 'content/about-ar.json', 'ar')
+      - name: Commit generated About pages
+        run: |
+          if git diff --quiet -- en/about.html ar/about.html; then
+            echo "No generated changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add en/about.html ar/about.html
+          git commit -m "Sync About content from Pages CMS [skip ci]"
+          git push
