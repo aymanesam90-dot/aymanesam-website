@@ -1,0 +1,41 @@
+media:
+  input: assets
+  output: /assets
+
+content:
+  - name: about-en
+    label: About — English
+    type: file
+    path: en/about.html
+    format: code
+  - name: about-ar
+    label: About — العربية
+    type: file
+    path: ar/about.html
+    format: code
+  - name: insights-en
+    label: Insights — English
+    type: collection
+    path: en/insights
+    format: code
+    subfolders: false
+    view:
+      layout: list
+  - name: insights-ar
+    label: Insights — العربية
+    type: collection
+    path: ar/insights
+    format: code
+    subfolders: false
+    view:
+      layout: list
+  - name: robots
+    label: robots.txt
+    type: file
+    path: robots.txt
+    format: code
+  - name: sitemap
+    label: sitemap.xml
+    type: file
+    path: sitemap.xml
+    format: code
