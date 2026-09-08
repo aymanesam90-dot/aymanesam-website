@@ -1,0 +1,102 @@
+name: Patch Pages CMS Insights
+
+on:
+  push:
+    paths:
+      - '.github/workflows/patch-pages-cms-insights.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch .pages.yml
+        shell: python
+        run: |
+          import re
+          from pathlib import Path
+          p=Path('.pages.yml')
+          t=p.read_text(encoding='utf-8')
+          block='''  - name: insights-index-en
+    label: Insights Page — English
+    type: file
+    path: content/insights-index-en.json
+    format: json
+    fields:
+      - {name: hero_title, label: Main title, type: string}
+      - {name: hero_intro, label: Introduction, type: text}
+      - {name: author_title, label: Author section title, type: string}
+      - {name: author_intro, label: Author introduction, type: text}
+      - {name: quote, label: Closing quote, type: text}
+      - {name: cta_title, label: CTA title, type: string}
+      - {name: cta_text, label: CTA text, type: text}
+  - name: insights-index-ar
+    label: Insights Page — العربية
+    type: file
+    path: content/insights-index-ar.json
+    format: json
+    fields:
+      - {name: hero_title, label: العنوان الرئيسي, type: string}
+      - {name: hero_intro, label: المقدمة, type: text}
+      - {name: author_title, label: عنوان قسم الكاتب, type: string}
+      - {name: author_intro, label: مقدمة الكاتب, type: text}
+      - {name: quote, label: العبارة الختامية, type: text}
+      - {name: cta_title, label: عنوان الدعوة, type: string}
+      - {name: cta_text, label: نص الدعوة, type: text}
+  - name: insights-en
+    label: Insight Articles — English
+    type: collection
+    path: content/insights-en
+    format: json
+    subfolders: false
+    operations: {create: false, rename: false, delete: false}
+    fields:
+      - {name: slug, label: Slug, type: string, readonly: true}
+      - {name: category, label: Category, type: string}
+      - {name: title, label: Article title, type: string}
+      - {name: meta, label: Reading / hero meta, type: text}
+      - {name: description, label: SEO description, type: text}
+      - name: body
+        label: Article body
+        type: rich-text
+        options: {format: html, media: false}
+    view:
+      primary: title
+      search: [title, category]
+      sort: [title]
+  - name: insights-ar
+    label: Insight Articles — العربية
+    type: collection
+    path: content/insights-ar
+    format: json
+    subfolders: false
+    operations: {create: false, rename: false, delete: false}
+    fields:
+      - {name: slug, label: الرابط, type: string, readonly: true}
+      - {name: category, label: التصنيف, type: string}
+      - {name: title, label: عنوان المقال, type: string}
+      - {name: meta, label: معلومات القراءة, type: text}
+      - {name: description, label: وصف SEO, type: text}
+      - name: body
+        label: محتوى المقال
+        type: rich-text
+        options: {format: html, media: false}
+    view:
+      primary: title
+      search: [title, category]
+      sort: [title]
+
+'''
+          nt,n=re.subn(r'  - name: insights-index-en\n.*?(?=  - name: contact-en\n)',block,t,count=1,flags=re.S)
+          if n!=1: raise SystemExit(f'Could not replace Insights block: {n}')
+          p.write_text(nt,encoding='utf-8')
+      - name: Commit CMS config
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .pages.yml
+          git commit -m "Convert Insights CMS to structured editors [skip ci]"
+          git push
