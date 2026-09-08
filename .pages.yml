@@ -40,7 +40,7 @@ content:
       - {name: about_quote, label: العبارة, type: text}
       - {name: industry_title, label: عنوان القطاعات, type: string}
 
-  - name: about-en-settings
+  - name: about-en
     label: About — English
     type: file
     path: content/about-en.json
@@ -57,7 +57,7 @@ content:
       - {name: events_intro, label: Events introduction, type: text}
       - {name: leap_year, label: LEAP year, type: string}
       - {name: seamless_year, label: Seamless year, type: string}
-  - name: about-ar-settings
+  - name: about-ar
     label: About — العربية
     type: file
     path: content/about-ar.json
@@ -219,30 +219,78 @@ content:
           - {name: description, label: الوصف, type: text}
       - {name: quote, label: العبارة الختامية, type: text}
 
-  - name: insights-index-en
+  - name: insights-page-en
     label: Insights Page — English
     type: file
-    path: en/insights.html
-    format: code
-  - name: insights-index-ar
+    path: content/insights-index-en.json
+    format: json
+    fields:
+      - {name: hero_title, label: Main title, type: string}
+      - {name: hero_intro, label: Introduction, type: text}
+      - {name: author_title, label: Author section title, type: string}
+      - {name: author_intro, label: Author introduction, type: text}
+      - {name: quote, label: Closing quote, type: text}
+      - {name: cta_title, label: CTA title, type: string}
+      - {name: cta_text, label: CTA text, type: text}
+  - name: insights-page-ar
     label: Insights Page — العربية
     type: file
-    path: ar/insights.html
-    format: code
+    path: content/insights-index-ar.json
+    format: json
+    fields:
+      - {name: hero_title, label: العنوان الرئيسي, type: string}
+      - {name: hero_intro, label: المقدمة, type: text}
+      - {name: author_title, label: عنوان قسم الكاتب, type: string}
+      - {name: author_intro, label: مقدمة الكاتب, type: text}
+      - {name: quote, label: العبارة الختامية, type: text}
+      - {name: cta_title, label: عنوان الدعوة, type: string}
+      - {name: cta_text, label: نص الدعوة, type: text}
   - name: insights-en
     label: Insight Articles — English
     type: collection
-    path: en/insights
-    format: code
+    path: content/insights-en
+    format: json
     subfolders: false
-    view: {layout: list}
+    operations: {create: false, rename: false, delete: false}
+    fields:
+      - {name: slug, label: Slug, type: string, readonly: true}
+      - {name: category, label: Category, type: string}
+      - {name: title, label: Article title, type: string}
+      - {name: meta, label: Reading / hero meta, type: text}
+      - {name: description, label: SEO description, type: text}
+      - name: body
+        label: Article body
+        type: rich-text
+        options:
+          format: html
+          media: false
+    view:
+      primary: title
+      search: [title, category]
+      sort: [title]
   - name: insights-ar
     label: Insight Articles — العربية
     type: collection
-    path: ar/insights
-    format: code
+    path: content/insights-ar
+    format: json
     subfolders: false
-    view: {layout: list}
+    operations: {create: false, rename: false, delete: false}
+    fields:
+      - {name: slug, label: الرابط, type: string, readonly: true}
+      - {name: category, label: التصنيف, type: string}
+      - {name: title, label: عنوان المقال, type: string}
+      - {name: meta, label: معلومات القراءة, type: text}
+      - {name: description, label: وصف SEO, type: text}
+      - name: body
+        label: محتوى المقال
+        type: rich-text
+        options:
+          format: html
+          media: false
+    view:
+      primary: title
+      search: [title, category]
+      sort: [title]
 
   - name: contact-en
     label: Contact — English
@@ -276,8 +324,10 @@ content:
     type: file
     path: robots.txt
     format: code
+    operations: {delete: false}
   - name: sitemap
     label: sitemap.xml
     type: file
     path: sitemap.xml
     format: code
+    operations: {delete: false}
