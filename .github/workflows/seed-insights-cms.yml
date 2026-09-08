@@ -19,6 +19,9 @@ jobs:
           import json, re, html
           from pathlib import Path
 
+          def clean(s):
+              return html.unescape(re.sub(r'<[^>]+>','',s)).strip()
+
           for lang in ('en','ar'):
               out=Path(f'content/insights-{lang}')
               out.mkdir(parents=True,exist_ok=True)
@@ -27,11 +30,15 @@ jobs:
                   def grab(pattern,label):
                       m=re.search(pattern,t,re.S)
                       if not m: raise SystemExit(f'{p}: missing {label}')
-                      return html.unescape(re.sub(r'<[^>]+>','',m.group(1))).strip()
+                      return clean(m.group(1))
                   desc=grab(r'<meta name="description" content="([^"]*)"','description')
                   category=grab(r'<section class="page-hero">.*?<div class="eyebrow">(.*?)</div>','category')
                   title=grab(r'<section class="page-hero">.*?<h1>(.*?)</h1>','title')
-                  meta=grab(r'<section class="page-hero">.*?<div class="article-meta">(.*?)</div>','meta')
+                  mm=re.search(r'<section class="page-hero">.*?<div class="article-meta">(.*?)</div>',t,re.S)
+                  if mm:
+                      meta=clean(mm.group(1))
+                  else:
+                      meta=grab(r'<section class="page-hero">.*?<h1>.*?</h1><p>(.*?)</p>','meta')
                   m=re.search(r'<article class="wrap article-page"><div class="author-box">.*?</div></div>(.*?)<div class="related-insights">',t,re.S)
                   if not m: raise SystemExit(f'{p}: missing article body')
                   body=m.group(1).strip()
