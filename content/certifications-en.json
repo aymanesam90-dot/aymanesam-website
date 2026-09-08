@@ -1,0 +1,10 @@
+{
+  "hero_title":"Professional credentials that strengthen finance execution.",
+  "hero_intro":"Formal finance credentials combined with practical systems capability across reporting, control, ERP implementation and finance transformation.",
+  "credentials":[
+    {"code":"CFM™","title":"Certified Financial Manager","description":"A professional finance credential supporting financial management, performance analysis, planning and business decision support."},
+    {"code":"CertIFR®","title":"Certificate in International Financial Reporting","description":"Focused knowledge in international financial reporting, accounting principles and reporting quality."},
+    {"code":"ERP","title":"Odoo & Finance Systems Capability","description":"Practical capability in ERP implementation, finance process design, system integration, automation and digital finance workflows."}
+  ],
+  "quote":"Professional credentials create the most value when they improve execution: clearer analysis, stronger reporting, better controls and more informed decisions."
+}
