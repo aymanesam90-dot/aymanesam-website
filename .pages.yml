@@ -6,13 +6,39 @@ content:
   - name: home-en
     label: Home — English
     type: file
-    path: en/index.html
-    format: code
+    path: content/home-en.json
+    format: json
+    fields:
+      - {name: kicker, label: Kicker, type: string}
+      - {name: name, label: Name, type: string}
+      - {name: headline, label: Headline, type: text}
+      - {name: intro, label: Introduction, type: text}
+      - {name: metric_sales, label: Sales metric, type: string}
+      - {name: metric_experience, label: Experience metric, type: string}
+      - {name: metric_companies, label: Companies metric, type: string}
+      - {name: metric_sectors, label: Sectors metric, type: string}
+      - {name: about_title, label: About title, type: string}
+      - {name: about_intro, label: About introduction, type: text}
+      - {name: about_quote, label: About quote, type: text}
+      - {name: industry_title, label: Industry title, type: string}
   - name: home-ar
     label: Home — العربية
     type: file
-    path: ar/index.html
-    format: code
+    path: content/home-ar.json
+    format: json
+    fields:
+      - {name: kicker, label: العنوان الصغير, type: string}
+      - {name: name, label: الاسم, type: string}
+      - {name: headline, label: المسمى الرئيسي, type: text}
+      - {name: intro, label: المقدمة, type: text}
+      - {name: metric_sales, label: مؤشر المبيعات, type: string}
+      - {name: metric_experience, label: مؤشر الخبرة, type: string}
+      - {name: metric_companies, label: مؤشر الشركات, type: string}
+      - {name: metric_sectors, label: مؤشر القطاعات, type: string}
+      - {name: about_title, label: عنوان نبذة عني, type: string}
+      - {name: about_intro, label: مقدمة نبذة عني, type: text}
+      - {name: about_quote, label: العبارة, type: text}
+      - {name: industry_title, label: عنوان القطاعات, type: string}
 
   - name: about-en-settings
     label: About — English
@@ -20,122 +46,178 @@ content:
     path: content/about-en.json
     format: json
     fields:
-      - name: hero_title
-        label: Main title
-        type: string
-      - name: hero_intro
-        label: Intro
-        type: text
-      - name: bio_primary
-        label: Experience summary
-        type: text
-      - name: bio_secondary
-        label: Objective
-        type: text
-      - name: quote
-        label: Finance quote
-        type: text
-      - name: location
-        label: Location
-        type: string
-      - name: current_scope
-        label: Current scope
-        type: text
-      - name: core_focus
-        label: Core focus
-        type: text
-      - name: events_intro
-        label: Events introduction
-        type: text
-      - name: leap_year
-        label: LEAP year
-        type: string
-      - name: seamless_year
-        label: Seamless year
-        type: string
+      - {name: hero_title, label: Main title, type: string}
+      - {name: hero_intro, label: Intro, type: text}
+      - {name: bio_primary, label: Experience summary, type: text}
+      - {name: bio_secondary, label: Objective, type: text}
+      - {name: quote, label: Finance quote, type: text}
+      - {name: location, label: Location, type: string}
+      - {name: current_scope, label: Current scope, type: text}
+      - {name: core_focus, label: Core focus, type: text}
+      - {name: events_intro, label: Events introduction, type: text}
+      - {name: leap_year, label: LEAP year, type: string}
+      - {name: seamless_year, label: Seamless year, type: string}
   - name: about-ar-settings
     label: About — العربية
     type: file
     path: content/about-ar.json
     format: json
     fields:
-      - name: hero_title
-        label: العنوان الرئيسي
-        type: string
-      - name: hero_intro
-        label: المقدمة
-        type: text
-      - name: bio_primary
-        label: ملخص الخبرة
-        type: text
-      - name: bio_secondary
-        label: الهدف المهني
-        type: text
-      - name: quote
-        label: العبارة المالية
-        type: text
-      - name: location
-        label: الموقع
-        type: string
-      - name: current_scope
-        label: النطاق الحالي
-        type: text
-      - name: core_focus
-        label: التركيز الأساسي
-        type: text
-      - name: events_intro
-        label: مقدمة الفعاليات
-        type: text
-      - name: leap_year
-        label: سنة LEAP
-        type: string
-      - name: seamless_year
-        label: سنة Seamless
-        type: string
+      - {name: hero_title, label: العنوان الرئيسي, type: string}
+      - {name: hero_intro, label: المقدمة, type: text}
+      - {name: bio_primary, label: ملخص الخبرة, type: text}
+      - {name: bio_secondary, label: الهدف المهني, type: text}
+      - {name: quote, label: العبارة المالية, type: text}
+      - {name: location, label: الموقع, type: string}
+      - {name: current_scope, label: النطاق الحالي, type: text}
+      - {name: core_focus, label: التركيز الأساسي, type: text}
+      - {name: events_intro, label: مقدمة الفعاليات, type: text}
+      - {name: leap_year, label: سنة LEAP, type: string}
+      - {name: seamless_year, label: سنة Seamless, type: string}
 
   - name: expertise-en
     label: Expertise — English
     type: file
-    path: en/expertise.html
-    format: code
+    path: content/expertise-en.json
+    format: json
+    fields:
+      - {name: hero_title, label: Main title, type: string}
+      - {name: hero_intro, label: Introduction, type: text}
+      - name: cards
+        label: Expertise cards
+        type: object
+        list:
+          min: 9
+          max: 9
+          collapsible: {collapsed: true, summary: "{title}"}
+        fields:
+          - {name: title, label: Title, type: string}
+          - {name: description, label: Description, type: text}
   - name: expertise-ar
     label: Expertise — العربية
     type: file
-    path: ar/expertise.html
-    format: code
+    path: content/expertise-ar.json
+    format: json
+    fields:
+      - {name: hero_title, label: العنوان الرئيسي, type: string}
+      - {name: hero_intro, label: المقدمة, type: text}
+      - name: cards
+        label: بطاقات الخبرات
+        type: object
+        list:
+          min: 9
+          max: 9
+          collapsible: {collapsed: true, summary: "{title}"}
+        fields:
+          - {name: title, label: العنوان, type: string}
+          - {name: description, label: الوصف, type: text}
 
   - name: experience-en
     label: Experience — English
     type: file
-    path: en/experience.html
-    format: code
+    path: content/experience-en.json
+    format: json
+    fields:
+      - {name: hero_title, label: Main title, type: string}
+      - {name: hero_intro, label: Introduction, type: text}
+      - name: jobs
+        label: Roles
+        type: object
+        list:
+          min: 6
+          max: 6
+          collapsible: {collapsed: true, summary: "{period} — {title}"}
+        fields:
+          - {name: period, label: Period, type: string}
+          - {name: title, label: Job title, type: string}
+          - {name: summary, label: Summary, type: text}
   - name: experience-ar
     label: Experience — العربية
     type: file
-    path: ar/experience.html
-    format: code
+    path: content/experience-ar.json
+    format: json
+    fields:
+      - {name: hero_title, label: العنوان الرئيسي, type: string}
+      - {name: hero_intro, label: المقدمة, type: text}
+      - name: jobs
+        label: الوظائف
+        type: object
+        list:
+          min: 6
+          max: 6
+          collapsible: {collapsed: true, summary: "{period} — {title}"}
+        fields:
+          - {name: period, label: الفترة, type: string}
+          - {name: title, label: المسمى الوظيفي, type: string}
+          - {name: summary, label: الوصف, type: text}
 
   - name: education-en
     label: Education — English
     type: file
-    path: en/education.html
-    format: code
+    path: content/education-en.json
+    format: json
+    fields:
+      - {name: hero_title, label: Main title, type: string}
+      - {name: hero_intro, label: Introduction, type: text}
+      - {name: degree, label: Degree, type: string}
+      - {name: major, label: Major, type: string}
+      - {name: university, label: University, type: string}
+      - {name: graduation, label: Graduation year, type: string}
+      - {name: quote, label: Education summary, type: text}
   - name: education-ar
     label: Education — العربية
     type: file
-    path: ar/education.html
-    format: code
+    path: content/education-ar.json
+    format: json
+    fields:
+      - {name: hero_title, label: العنوان الرئيسي, type: string}
+      - {name: hero_intro, label: المقدمة, type: text}
+      - {name: degree, label: المؤهل, type: string}
+      - {name: major, label: التخصص, type: string}
+      - {name: university, label: الجامعة, type: string}
+      - {name: graduation, label: سنة التخرج, type: string}
+      - {name: quote, label: ملخص التعليم, type: text}
 
   - name: certifications-en
     label: Certifications — English
     type: file
-    path: en/certifications.html
-    format: code
+    path: content/certifications-en.json
+    format: json
+    fields:
+      - {name: hero_title, label: Main title, type: string}
+      - {name: hero_intro, label: Introduction, type: text}
+      - name: credentials
+        label: Credentials
+        type: object
+        list:
+          min: 3
+          max: 3
+          collapsible: {collapsed: true, summary: "{code} — {title}"}
+        fields:
+          - {name: code, label: Code, type: string}
+          - {name: title, label: Title, type: string}
+          - {name: description, label: Description, type: text}
+      - {name: quote, label: Closing quote, type: text}
   - name: certifications-ar
     label: Certifications — العربية
     type: file
-    path: ar/certifications.html
-    format: code
+    path: content/certifications-ar.json
+    format: json
+    fields:
+      - {name: hero_title, label: العنوان الرئيسي, type: string}
+      - {name: hero_intro, label: المقدمة, type: text}
+      - name: credentials
+        label: المؤهلات
+        type: object
+        list:
+          min: 3
+          max: 3
+          collapsible: {collapsed: true, summary: "{code} — {title}"}
+        fields:
+          - {name: code, label: الرمز, type: string}
+          - {name: title, label: العنوان, type: string}
+          - {name: description, label: الوصف, type: text}
+      - {name: quote, label: العبارة الختامية, type: text}
 
   - name: insights-index-en
     label: Insights Page — English
@@ -153,27 +235,41 @@ content:
     path: en/insights
     format: code
     subfolders: false
-    view:
-      layout: list
+    view: {layout: list}
   - name: insights-ar
     label: Insight Articles — العربية
     type: collection
     path: ar/insights
     format: code
     subfolders: false
-    view:
-      layout: list
+    view: {layout: list}
 
   - name: contact-en
     label: Contact — English
     type: file
-    path: en/contact.html
-    format: code
+    path: content/contact-en.json
+    format: json
+    fields:
+      - {name: hero_title, label: Main title, type: string}
+      - {name: hero_intro, label: Introduction, type: text}
+      - {name: email, label: Email, type: string}
+      - {name: mobile, label: Mobile, type: string}
+      - {name: linkedin_label, label: LinkedIn label, type: string}
+      - {name: linkedin_url, label: LinkedIn URL, type: string}
+      - {name: location, label: Location, type: string}
   - name: contact-ar
     label: Contact — العربية
     type: file
-    path: ar/contact.html
-    format: code
+    path: content/contact-ar.json
+    format: json
+    fields:
+      - {name: hero_title, label: العنوان الرئيسي, type: string}
+      - {name: hero_intro, label: المقدمة, type: text}
+      - {name: email, label: البريد الإلكتروني, type: string}
+      - {name: mobile, label: الجوال, type: string}
+      - {name: linkedin_label, label: نص LinkedIn, type: string}
+      - {name: linkedin_url, label: رابط LinkedIn, type: string}
+      - {name: location, label: الموقع, type: string}
 
   - name: robots
     label: robots.txt
