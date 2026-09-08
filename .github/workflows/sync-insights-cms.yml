@@ -1,0 +1,91 @@
+name: Sync Insights CMS
+
+on:
+  push:
+    paths:
+      - 'content/insights-index-*.json'
+      - 'content/insights-en/*.json'
+      - 'content/insights-ar/*.json'
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Sync Insights content into HTML
+        shell: python
+        run: |
+          import json, re, html
+          from pathlib import Path
+
+          def esc(v): return html.escape(str(v), quote=False)
+          def load(p): return json.loads(Path(p).read_text(encoding='utf-8'))
+          def read(p): return Path(p).read_text(encoding='utf-8')
+          def write(p,t): Path(p).write_text(t, encoding='utf-8')
+          def one(t,pat,repl,label):
+              nt,n=re.subn(pat,repl,t,count=1,flags=re.S)
+              if n!=1: raise SystemExit(f'{label}: expected 1 match, found {n}')
+              return nt
+
+          def sync_index(path,data_path,lang):
+              t=read(path); d=load(data_path)
+              t=one(t,r'(<section class="page-hero"><div class="wrap"><div class="eyebrow">.*?</div><h1>).*?(</h1><p>)',lambda m:m.group(1)+esc(d['hero_title'])+m.group(2),'insights hero title')
+              t=one(t,r'(<section class="page-hero"><div class="wrap"><div class="eyebrow">.*?</div><h1>.*?</h1><p>).*?(</p></div></section>)',lambda m:m.group(1)+esc(d['hero_intro'])+m.group(2),'insights hero intro')
+              t=one(t,r'(<div class="insights-author-intro">.*?<div><div class="eyebrow">.*?</div><h3>).*?(</h3><p>)',lambda m:m.group(1)+esc(d['author_title'])+m.group(2),'author title')
+              t=one(t,r'(<div class="insights-author-intro">.*?<h3>.*?</h3><p>).*?(</p></div></div>)',lambda m:m.group(1)+esc(d['author_intro'])+m.group(2),'author intro')
+              t=one(t,r'(<div class="quote-box">).*?(</div><div class="insights-page-cta">)',lambda m:m.group(1)+esc(d['quote'])+m.group(2),'insights quote')
+              t=one(t,r'(<div class="insights-page-cta"><div><b>).*?(</b><span>)',lambda m:m.group(1)+esc(d['cta_title'])+m.group(2),'cta title')
+              t=one(t,r'(<div class="insights-page-cta"><div><b>.*?</b><span>).*?(</span></div></div>)',lambda m:m.group(1)+esc(d['cta_text'])+m.group(2),'cta text')
+              write(path,t)
+
+          def sync_article(lang,json_path):
+              d=load(json_path); slug=d['slug']; path=Path(f'{lang}/insights/{slug}.html')
+              if not path.exists(): raise SystemExit(f'Missing article HTML: {path}')
+              t=read(path)
+              suffix=' | Ayman Esam | أيمن عصام'
+              title_full=esc(d['title'])+suffix
+              t=one(t,r'(<title>).*?(</title>)',lambda m:m.group(1)+title_full+m.group(2),'title tag')
+              t=one(t,r'(<meta name="description" content=").*?(">)',lambda m:m.group(1)+html.escape(str(d['description']),quote=True)+m.group(2),'meta description')
+              for prop in ('og:title','twitter:title'):
+                  t=one(t,rf'(<meta property="{prop}" content=").*?(">)' if prop.startswith('og:') else rf'(<meta name="{prop}" content=").*?(">)',lambda m:m.group(1)+html.escape(str(d['title'])+suffix,quote=True)+m.group(2),prop)
+              for prop in ('og:description','twitter:description'):
+                  t=one(t,rf'(<meta property="{prop}" content=").*?(">)' if prop.startswith('og:') else rf'(<meta name="{prop}" content=").*?(">)',lambda m:m.group(1)+html.escape(str(d['description']),quote=True)+m.group(2),prop)
+              t=re.sub(r'("headline"\s*:\s*").*?("\s*,)',lambda m:m.group(1)+str(d['title']).replace('"','\\"')+m.group(2),t,count=1)
+              t=re.sub(r'("description"\s*:\s*").*?("\s*,\s*"mainEntityOfPage")',lambda m:m.group(1)+str(d['description']).replace('"','\\"')+m.group(2),t,count=1)
+              t=one(t,r'(<section class="page-hero">.*?<div class="eyebrow">).*?(</div><h1>)',lambda m:m.group(1)+esc(d['category'])+m.group(2),'article category')
+              t=one(t,r'(<section class="page-hero">.*?<h1>).*?(</h1>)',lambda m:m.group(1)+esc(d['title'])+m.group(2),'article h1')
+              if 'article-meta' in t:
+                  t=one(t,r'(<div class="article-meta">).*?(</div>)',lambda m:m.group(1)+esc(d['meta'])+m.group(2),'article meta')
+              else:
+                  t=one(t,r'(<section class="page-hero">.*?<h1>.*?</h1><p>).*?(</p></div></section>)',lambda m:m.group(1)+esc(d['meta'])+m.group(2),'article intro/meta')
+              t=one(t,r'(<article class="wrap article-page"><div class="author-box">.*?</div></div>).*?(<div class="related-insights">)',lambda m:m.group(1)+str(d['body']).strip()+m.group(2),'article body')
+              write(path,t)
+
+              idx=Path(f'{lang}/insights.html')
+              it=read(idx)
+              pat=rf'(<a class="article-card" href="insights/{re.escape(slug)}\.html">.*?<div class="article-cover"><span>).*?(</span>.*?<h4>).*?(</h4><p>).*?(</p><span class="read-more">)'
+              m=re.search(pat,it,re.S)
+              if m:
+                  rep=m.group(1)+esc(d['category'])+m.group(2)+esc(d['title'])+m.group(3)+esc(d['description'])+m.group(4)
+                  it=it[:m.start()]+rep+it[m.end():]
+                  write(idx,it)
+
+          sync_index('en/insights.html','content/insights-index-en.json','en')
+          sync_index('ar/insights.html','content/insights-index-ar.json','ar')
+          for lang in ('en','ar'):
+              for p in sorted(Path(f'content/insights-{lang}').glob('*.json')):
+                  sync_article(lang,p)
+      - name: Commit generated Insights pages
+        run: |
+          if git diff --quiet -- en/insights.html ar/insights.html en/insights ar/insights; then
+            echo "No generated changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add en/insights.html ar/insights.html en/insights ar/insights
+          git commit -m "Sync Insights content from Pages CMS [skip ci]"
+          git push
