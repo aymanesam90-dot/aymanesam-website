@@ -251,11 +251,13 @@ content:
     path: content/insights-en
     format: json
     subfolders: false
-    operations: {create: false, rename: false, delete: false}
+    filename: "{slug}.json"
+    operations: {create: true, rename: false, delete: false}
     fields:
-      - {name: slug, label: Slug, type: string, readonly: true}
+      - {name: slug, label: Slug, type: string, required: true, pattern: "^[a-z0-9-]+$"}
       - {name: category, label: Category, type: string}
       - {name: title, label: Article title, type: string}
+      - {name: image, label: Article image, type: image, required: true, options: {path: insights, extensions: [jpg, jpeg, png, webp], rename: safe}}
       - {name: meta, label: Reading / hero meta, type: text}
       - {name: description, label: SEO description, type: text}
       - name: body
@@ -274,11 +276,13 @@ content:
     path: content/insights-ar
     format: json
     subfolders: false
-    operations: {create: false, rename: false, delete: false}
+    filename: "{slug}.json"
+    operations: {create: true, rename: false, delete: false}
     fields:
-      - {name: slug, label: الرابط, type: string, readonly: true}
+      - {name: slug, label: الرابط, type: string, required: true, pattern: "^[a-z0-9-]+$"}
       - {name: category, label: التصنيف, type: string}
       - {name: title, label: عنوان المقال, type: string}
+      - {name: image, label: صورة المقال, type: image, required: true, options: {path: insights, extensions: [jpg, jpeg, png, webp], rename: safe}}
       - {name: meta, label: معلومات القراءة, type: text}
       - {name: description, label: وصف SEO, type: text}
       - name: body
