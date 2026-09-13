@@ -1,0 +1,126 @@
+name: Setup New Article CMS
+
+on:
+  push:
+    paths:
+      - '.github/workflows/setup-new-article-cms.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure new article creation
+        shell: python
+        run: |
+          from pathlib import Path
+
+          p=Path('.pages.yml')
+          t=p.read_text(encoding='utf-8')
+          # Enable creation while keeping rename/delete protected.
+          t=t.replace('operations: {create: false, rename: false, delete: false}', 'operations: {create: true, rename: false, delete: false}')
+          # Collection filenames come from the slug entered by the editor.
+          t=t.replace('    subfolders: false\n    operations: {create: true, rename: false, delete: false}', '    subfolders: false\n    filename:\n      template: "{slug}.json"\n      field: false\n    operations: {create: true, rename: false, delete: false}')
+          t=t.replace('- {name: slug, label: Slug, type: string, readonly: true}', '- {name: slug, label: Slug, type: string, required: true, pattern: "^[a-z0-9-]+$", description: "Lowercase English letters, numbers and hyphens only — e.g. cash-flow-forecasting"}')
+          t=t.replace('- {name: slug, label: الرابط, type: string, readonly: true}', '- {name: slug, label: الرابط, type: string, required: true, pattern: "^[a-z0-9-]+$", description: "استخدم حروف إنجليزية صغيرة وأرقام وشرطة فقط — مثال: cash-flow-forecasting"}')
+          # Add one dedicated cover/share image field to both article collections.
+          marker='      - {name: title, label: Article title, type: string}\n'
+          if 'label: Article image' not in t:
+              t=t.replace(marker, marker+'      - name: image\n        label: Article image\n        type: image\n        required: true\n        options:\n          path: insights\n          extensions: [jpg, jpeg, png, webp]\n          rename: safe\n',1)
+          marker='      - {name: title, label: عنوان المقال, type: string}\n'
+          if 'label: صورة المقال' not in t:
+              t=t.replace(marker, marker+'      - name: image\n        label: صورة المقال\n        type: image\n        required: true\n        options:\n          path: insights\n          extensions: [jpg, jpeg, png, webp]\n          rename: safe\n',1)
+          p.write_text(t,encoding='utf-8')
+
+          p=Path('.github/workflows/sync-insights-cms.yml')
+          t=p.read_text(encoding='utf-8')
+          # New JSON entry: create an HTML article from the existing language template.
+          old="""              if not path.exists(): raise SystemExit(f'Missing article HTML: {path}')
+              t=read(path)
+"""
+          new="""              is_new=not path.exists()
+              if is_new:
+                  template=Path(f'{lang}/insights/fp-and-a-for-better-decisions.html')
+                  t=read(template)
+                  # Rewrite URLs inherited from the template.
+                  base=f'https://aymanesam.com/{lang}/insights/{slug}.html'
+                  t=re.sub(r'<link rel=\"canonical\" href=\"[^\"]+\">', f'<link rel=\"canonical\" href=\"{base}\">', t, count=1)
+                  t=re.sub(r'<meta property=\"og:url\" content=\"[^\"]+\">', f'<meta property=\"og:url\" content=\"{base}\">', t, count=1)
+                  t=re.sub(r'(\"mainEntityOfPage\"\s*:\s*\")[^\"]+(\")', rf'\\1{base}\\2', t, count=1)
+                  other='ar' if lang=='en' else 'en'
+                  t=re.sub(r'<link rel=\"alternate\" hreflang=\"en\" href=\"[^\"]+\">', f'<link rel=\"alternate\" hreflang=\"en\" href=\"https://aymanesam.com/en/insights/{slug}.html\">', t, count=1)
+                  t=re.sub(r'<link rel=\"alternate\" hreflang=\"ar\" href=\"[^\"]+\">', f'<link rel=\"alternate\" hreflang=\"ar\" href=\"https://aymanesam.com/ar/insights/{slug}.html\">', t, count=1)
+                  t=re.sub(r'<link rel=\"alternate\" hreflang=\"x-default\" href=\"[^\"]+\">', f'<link rel=\"alternate\" hreflang=\"x-default\" href=\"https://aymanesam.com/en/insights/{slug}.html\">', t, count=1)
+                  if lang=='en':
+                      t=re.sub(r'<a class=\"lang\" href=\"[^\"]+\">.*?</a>', f'<a class=\"lang\" href=\"../../ar/insights/{slug}.html\">العربية</a>', t, count=1)
+                  else:
+                      t=re.sub(r'<a class=\"lang\" href=\"[^\"]+\">.*?</a>', f'<a class=\"lang\" href=\"../../en/insights/{slug}.html\">English</a>', t, count=1)
+              else:
+                  t=read(path)
+"""
+          if old not in t: raise SystemExit('Could not find article creation insertion point')
+          t=t.replace(old,new,1)
+
+          # Use the selected article image for social previews and display it below the author box.
+          old="""              title_full=esc(d['title'])+suffix
+              t=one(t,r'(<title>).*?(</title>)',lambda m:m.group(1)+title_full+m.group(2),'title tag')
+"""
+          new="""              title_full=esc(d['title'])+suffix
+              image=d.get('image') or '/assets/ayman-hero.jpg'
+              image_abs=image if str(image).startswith('http') else 'https://aymanesam.com'+('/'+str(image).lstrip('/'))
+              t=one(t,r'(<title>).*?(</title>)',lambda m:m.group(1)+title_full+m.group(2),'title tag')
+              t=re.sub(r'(<meta property=\"og:image\" content=\")[^\"]+(\">)',lambda m:m.group(1)+html.escape(image_abs,quote=True)+m.group(2),t,count=1)
+              t=re.sub(r'(<meta name=\"twitter:image\" content=\")[^\"]+(\">)',lambda m:m.group(1)+html.escape(image_abs,quote=True)+m.group(2),t,count=1)
+              t=re.sub(r'(\"image\"\s*:\s*\")[^\"]+(\")',lambda m:m.group(1)+image_abs+m.group(2),t,count=1)
+              t=re.sub(r'<!-- ARTICLE_IMAGE_START -->.*?<!-- ARTICLE_IMAGE_END -->','',t,flags=re.S)
+              if d.get('image'):
+                  hero=f'<!-- ARTICLE_IMAGE_START --><figure class=\"article-featured-image\" style=\"margin:0 0 28px\"><img src=\"{html.escape(str(image),quote=True)}\" alt=\"{html.escape(str(d[\"title\"]),quote=True)}\" style=\"width:100%;height:auto;border-radius:16px;display:block\" loading=\"eager\" decoding=\"async\"></figure><!-- ARTICLE_IMAGE_END -->'
+                  t=t.replace('</div></div>', '</div></div>'+hero, 1)
+"""
+          if old not in t: raise SystemExit('Could not find image insertion point')
+          t=t.replace(old,new,1)
+
+          # Add a card for a newly created article to the Insights page.
+          old="""              m=re.search(pat,it,re.S)
+              if m:
+                  rep=m.group(1)+esc(d['category'])+m.group(2)+esc(d['title'])+m.group(3)+esc(d['description'])+m.group(4)
+                  it=it[:m.start()]+rep+it[m.end():]
+                  write(idx,it)
+"""
+          new="""              m=re.search(pat,it,re.S)
+              if m:
+                  rep=m.group(1)+esc(d['category'])+m.group(2)+esc(d['title'])+m.group(3)+esc(d['description'])+m.group(4)
+                  it=it[:m.start()]+rep+it[m.end():]
+              else:
+                  read_more='Read article →' if lang=='en' else 'اقرأ المقال ←'
+                  cover_style=''
+                  if d.get('image'):
+                      cover_style=f' style=\"background-image:linear-gradient(rgba(45,48,43,.38),rgba(45,48,43,.38)),url({html.escape(str(d[\"image\"]),quote=True)});background-size:cover;background-position:center\"'
+                  card=f'<a class=\"article-card\" href=\"insights/{slug}.html\"><div class=\"article-cover\"{cover_style}><span>{esc(d[\"category\"])}</span></div><div class=\"article-body\"><div class=\"article-meta\">{esc(d[\"meta\"])}</div><h4>{esc(d[\"title\"])}</h4><p>{esc(d[\"description\"])}</p><span class=\"read-more\">{read_more}</span></div></a>'
+                  it=it.replace('<div class=\"article-grid\">','<div class=\"article-grid\">'+card,1)
+              write(idx,it)
+
+              # Keep sitemap in sync automatically.
+              sm=Path('sitemap.xml'); st=read(sm)
+              url=f'https://aymanesam.com/{lang}/insights/{slug}.html'
+              if url not in st:
+                  entry=f'<url><loc>{url}</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>\\n'
+                  st=st.replace('</urlset>',entry+'</urlset>')
+                  write(sm,st)
+"""
+          if old not in t: raise SystemExit('Could not find index insertion point')
+          t=t.replace(old,new,1)
+          # Ensure generated sitemap is committed too.
+          t=t.replace('git diff --quiet -- en/insights.html ar/insights.html en/insights ar/insights', 'git diff --quiet -- en/insights.html ar/insights.html en/insights ar/insights sitemap.xml')
+          t=t.replace('git add en/insights.html ar/insights.html en/insights ar/insights', 'git add en/insights.html ar/insights.html en/insights ar/insights sitemap.xml')
+          p.write_text(t,encoding='utf-8')
+      - name: Commit setup
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .pages.yml .github/workflows/sync-insights-cms.yml
+          git commit -m "Enable new articles with images in Pages CMS"
+          git push
