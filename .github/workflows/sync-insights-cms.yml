@@ -30,6 +30,21 @@ jobs:
               if n!=1: raise SystemExit(f'{label}: expected 1 match, found {n}')
               return nt
 
+          def share_block(lang):
+              if lang == 'ar':
+                  heading='شارك هذا المقال'
+                  linkedin='لينكدإن'
+                  whatsapp='واتساب'
+                  copy='نسخ الرابط'
+                  copied='تم النسخ'
+              else:
+                  heading='Share this insight'
+                  linkedin='LinkedIn'
+                  whatsapp='WhatsApp'
+                  copy='Copy link'
+                  copied='Copied'
+              return f'''<!-- ARTICLE_SHARE_START --><div class="article-share" aria-label="{heading}"><style>.article-share{{margin:34px 0 30px;padding:20px 22px;border:1px solid rgba(181,138,82,.28);border-radius:16px;background:#fffdf9;box-shadow:0 10px 30px rgba(45,48,43,.05)}}.article-share-title{{font-weight:700;margin:0 0 13px;color:#2d302b}}.article-share-actions{{display:flex;flex-wrap:wrap;gap:10px}}.article-share a,.article-share button{{appearance:none;border:1px solid rgba(45,48,43,.16);background:#fff;color:#2d302b;border-radius:999px;padding:10px 15px;font:inherit;font-weight:600;line-height:1;cursor:pointer;text-decoration:none;transition:.18s ease}}.article-share a:hover,.article-share button:hover{{border-color:#b58a52;transform:translateY(-1px)}}.article-share .share-linkedin{{background:#2d302b;color:#fff;border-color:#2d302b}}@media(max-width:560px){{.article-share{{padding:18px 16px}}.article-share-actions{{display:grid;grid-template-columns:1fr}}.article-share a,.article-share button{{text-align:center;width:100%}}}}</style><div class="article-share-title">{heading}</div><div class="article-share-actions"><a class="share-linkedin" href="https://www.linkedin.com/sharing/share-offsite/?url=" data-share="linkedin" target="_blank" rel="noopener noreferrer">{linkedin}</a><a href="https://wa.me/?text=" data-share="whatsapp" target="_blank" rel="noopener noreferrer">{whatsapp}</a><button type="button" data-share="copy" data-copy-label="{copy}" data-copied-label="{copied}">{copy}</button></div><script>(function(){{const box=document.currentScript.parentElement,u=location.href,t=document.title;const li=box.querySelector('[data-share="linkedin"]'),wa=box.querySelector('[data-share="whatsapp"]'),cp=box.querySelector('[data-share="copy"]');li.href='https://www.linkedin.com/sharing/share-offsite/?url='+encodeURIComponent(u);wa.href='https://wa.me/?text='+encodeURIComponent(t+' '+u);cp.addEventListener('click',async()=>{{try{{await navigator.clipboard.writeText(u);cp.textContent=cp.dataset.copiedLabel;setTimeout(()=>cp.textContent=cp.dataset.copyLabel,1600)}}catch(e){{prompt('Copy this link:',u)}}}})}})();</script></div><!-- ARTICLE_SHARE_END -->'''
+
           def sync_index(path,data_path,lang):
               t=read(path); d=load(data_path)
               t=one(t,r'(<section class="page-hero"><div class="wrap"><div class="eyebrow">.*?</div><h1>).*?(</h1><p>)',lambda m:m.group(1)+esc(d['hero_title'])+m.group(2),'insights hero title')
@@ -61,7 +76,7 @@ jobs:
                   t=one(t,r'(<div class="article-meta">).*?(</div>)',lambda m:m.group(1)+esc(d['meta'])+m.group(2),'article meta')
               else:
                   t=one(t,r'(<section class="page-hero">.*?<h1>.*?</h1><p>).*?(</p></div></section>)',lambda m:m.group(1)+esc(d['meta'])+m.group(2),'article intro/meta')
-              t=one(t,r'(<article class="wrap article-page"><div class="author-box">.*?</div></div>).*?(<div class="related-insights">)',lambda m:m.group(1)+str(d['body']).strip()+m.group(2),'article body')
+              t=one(t,r'(<article class="wrap article-page"><div class="author-box">.*?</div></div>).*?(<div class="related-insights">)',lambda m:m.group(1)+str(d['body']).strip()+share_block(lang)+m.group(2),'article body + share')
               write(path,t)
 
               idx=Path(f'{lang}/insights.html')
