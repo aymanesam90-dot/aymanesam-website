@@ -1,0 +1,101 @@
+name: Publish New Insight Articles
+
+on:
+  push:
+    paths:
+      - 'content/insights-en/*.json'
+      - 'content/insights-ar/*.json'
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Generate new article pages
+        shell: python
+        run: |
+          import json,re,html
+          from pathlib import Path
+          def esc(x): return html.escape(str(x),quote=False)
+          def attr(x): return html.escape(str(x),quote=True)
+          made=False
+          for lang in ('en','ar'):
+            folder=Path('content')/f'insights-{lang}'
+            for jp in sorted(folder.glob('*.json')):
+              d=json.loads(jp.read_text(encoding='utf-8'))
+              slug=d.get('slug','').strip()
+              if not slug: continue
+              out=Path(lang)/'insights'/f'{slug}.html'
+              if out.exists(): continue
+              template=Path(lang)/'insights'/'fp-and-a-for-better-decisions.html'
+              t=template.read_text(encoding='utf-8')
+              title=d.get('title',''); desc=d.get('description',''); cat=d.get('category',''); meta=d.get('meta',''); body=d.get('body','')
+              image=d.get('image') or '/assets/ayman-hero.jpg'
+              image_abs=image if str(image).startswith('http') else 'https://aymanesam.com/'+str(image).lstrip('/')
+              url=f'https://aymanesam.com/{lang}/insights/{slug}.html'
+              suffix=' | Ayman Esam | أيمن عصام'
+              t=re.sub(r'<title>.*?</title>',f'<title>{esc(title)}{suffix}</title>',t,count=1,flags=re.S)
+              t=re.sub(r'<meta name="description" content="[^"]*">',f'<meta name="description" content="{attr(desc)}">',t,count=1)
+              t=re.sub(r'<link rel="canonical" href="[^"]*">',f'<link rel="canonical" href="{url}">',t,count=1)
+              t=re.sub(r'<meta property="og:title" content="[^"]*">',f'<meta property="og:title" content="{attr(title+suffix)}">',t,count=1)
+              t=re.sub(r'<meta property="og:description" content="[^"]*">',f'<meta property="og:description" content="{attr(desc)}">',t,count=1)
+              t=re.sub(r'<meta property="og:url" content="[^"]*">',f'<meta property="og:url" content="{url}">',t,count=1)
+              t=re.sub(r'<meta property="og:image" content="[^"]*">',f'<meta property="og:image" content="{attr(image_abs)}">',t,count=1)
+              t=re.sub(r'<meta name="twitter:title" content="[^"]*">',f'<meta name="twitter:title" content="{attr(title+suffix)}">',t,count=1)
+              t=re.sub(r'<meta name="twitter:description" content="[^"]*">',f'<meta name="twitter:description" content="{attr(desc)}">',t,count=1)
+              t=re.sub(r'<meta name="twitter:image" content="[^"]*">',f'<meta name="twitter:image" content="{attr(image_abs)}">',t,count=1)
+              t=re.sub(r'<link rel="alternate" hreflang="en" href="[^"]*">',f'<link rel="alternate" hreflang="en" href="https://aymanesam.com/en/insights/{slug}.html">',t,count=1)
+              t=re.sub(r'<link rel="alternate" hreflang="ar" href="[^"]*">',f'<link rel="alternate" hreflang="ar" href="https://aymanesam.com/ar/insights/{slug}.html">',t,count=1)
+              t=re.sub(r'<link rel="alternate" hreflang="x-default" href="[^"]*">',f'<link rel="alternate" hreflang="x-default" href="https://aymanesam.com/en/insights/{slug}.html">',t,count=1)
+              t=re.sub(r'("headline"\s*:\s*").*?("\s*,)',lambda m:m.group(1)+title.replace('"','\\"')+m.group(2),t,count=1)
+              t=re.sub(r'("description"\s*:\s*").*?("\s*,\s*"mainEntityOfPage")',lambda m:m.group(1)+desc.replace('"','\\"')+m.group(2),t,count=1)
+              t=re.sub(r'("mainEntityOfPage"\s*:\s*").*?(")',lambda m:m.group(1)+url+m.group(2),t,count=1)
+              t=re.sub(r'("image"\s*:\s*").*?(")',lambda m:m.group(1)+image_abs+m.group(2),t,count=1)
+              t=re.sub(r'(<section class="page-hero">.*?<div class="eyebrow">).*?(</div><h1>)',lambda m:m.group(1)+esc(cat)+m.group(2),t,count=1,flags=re.S)
+              t=re.sub(r'(<section class="page-hero">.*?<h1>).*?(</h1>)',lambda m:m.group(1)+esc(title)+m.group(2),t,count=1,flags=re.S)
+              t=re.sub(r'(<div class="article-meta">).*?(</div>)',lambda m:m.group(1)+esc(meta)+m.group(2),t,count=1,flags=re.S)
+              if lang=='en':
+                t=re.sub(r'<a class="lang" href="[^"]*">.*?</a>',f'<a class="lang" href="../../ar/insights/{slug}.html">العربية</a>',t,count=1)
+              else:
+                t=re.sub(r'<a class="lang" href="[^"]*">.*?</a>',f'<a class="lang" href="../../en/insights/{slug}.html">English</a>',t,count=1)
+              author_end='</div></div>'
+              hero='<figure class="article-featured-image" style="margin:0 0 28px"><img src="'+attr(image)+'" alt="'+attr(title)+'" style="width:100%;height:auto;border-radius:16px;display:block" loading="eager" decoding="async"></figure>'
+              pos=t.find(author_end,t.find('<div class="author-box">'))
+              if pos>=0:
+                pos+=len(author_end); t=t[:pos]+hero+t[pos:]
+              share_start=t.find('<!-- ARTICLE_SHARE_START -->')
+              related=t.find('<div class="related-insights">')
+              body_start=t.find(author_end,t.find('<div class="author-box">'))+len(author_end)+len(hero)
+              if share_start>=0 and related>share_start:
+                share=t[share_start:related]
+                t=t[:body_start]+str(body).strip()+share+t[related:]
+              out.write_text(t,encoding='utf-8')
+              idx=Path(lang)/'insights.html'; it=idx.read_text(encoding='utf-8')
+              read_more='Read article →' if lang=='en' else 'اقرأ المقال ←'
+              cover=' style="background-image:linear-gradient(rgba(45,48,43,.38),rgba(45,48,43,.38)),url('+attr(image)+');background-size:cover;background-position:center"'
+              card='<a class="article-card" href="insights/'+slug+'.html"><div class="article-cover"'+cover+'><span>'+esc(cat)+'</span></div><div class="article-body"><div class="article-meta">'+esc(meta)+'</div><h4>'+esc(title)+'</h4><p>'+esc(desc)+'</p><span class="read-more">'+read_more+'</span></div></a>'
+              it=it.replace('<div class="article-grid">','<div class="article-grid">'+card,1)
+              idx.write_text(it,encoding='utf-8')
+              sm=Path('sitemap.xml'); st=sm.read_text(encoding='utf-8')
+              if url not in st:
+                st=st.replace('</urlset>','<url><loc>'+url+'</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>\n</urlset>')
+                sm.write_text(st,encoding='utf-8')
+              made=True
+          print('Generated new article pages' if made else 'No new article pages required')
+      - name: Commit generated pages
+        run: |
+          if git diff --quiet -- en/insights.html ar/insights.html en/insights ar/insights sitemap.xml; then
+            echo "No generated changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add en/insights.html ar/insights.html en/insights ar/insights sitemap.xml
+          git commit -m "Publish new Insight article [skip ci]"
+          git pull --rebase origin main
+          git push
