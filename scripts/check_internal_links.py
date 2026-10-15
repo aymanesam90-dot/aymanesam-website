@@ -21,7 +21,7 @@ class Links(HTMLParser):
                 if a.get(key):
                     values = a[key].split(",") if key == "srcset" else [a[key]]
                     for value in values:
-                        self.links.append((key, value.strip().split()[0]))
+                        self.links.append((key, value.strip().split()[0] if key == 'srcset' else value.strip()))
 
 def main():
     pages = [p for p in ROOT.rglob("*.html") if not any(x in SKIP for x in p.relative_to(ROOT).parts)]
