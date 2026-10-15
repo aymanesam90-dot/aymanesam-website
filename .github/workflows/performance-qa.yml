@@ -1,0 +1,104 @@
+name: Homepage performance safeguards
+on:
+  push:
+    branches:
+      - 'perf/mobile-css-fonts-20261015'
+  pull_request:
+    paths:
+      - 'en/index.html'
+      - 'ar/index.html'
+      - 'assets/custom-v12-optimized.css'
+      - '.github/workflows/performance-qa.yml'
+  workflow_dispatch:
+jobs:
+  static-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate homepage assets and SEO metadata
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          css = Path("assets/custom-v12-optimized.css")
+          assert css.exists(), "Optimized CSS missing"
+          assert "@import" not in css.read_text(), "CSS import chain reintroduced"
+          for lang in ("en", "ar"):
+              html = Path(lang, "index.html").read_text()
+              assert f'<html lang="{lang}"' in html, f"Incorrect language: {lang}"
+              assert f'href="https://aymanesam.com/{lang}/"' in html, f"Canonical missing: {lang}"
+              assert 'custom-v12-base.css?v=1' in html, f"Base CSS missing: {lang}"
+              assert 'custom-v12-optimized.css?v=1' in html, f"Optimized CSS missing: {lang}"
+              assert 'fonts.gstatic.com' in html and 'fonts.googleapis.com' in html, f"Fonts missing: {lang}"
+              assert 'fetchpriority="high"' in html, f"Hero priority missing: {lang}"
+              assert 'ayman-hero-mobile.webp' in html, f"Mobile hero missing: {lang}"
+              assert 'ayman-executive-mobile.webp' in html, f"Mobile executive image missing: {lang}"
+              for asset in re.findall(r'(?:href|src|srcset)="\.\./assets/([^"]+)"', html):
+                  filename = asset.split("?")[0]
+                  assert Path("assets", filename).exists(), f"Missing asset {filename} on {lang}"
+          print("Homepage CSS, image references, language and canonical checks passed")
+
+          PY
+
+  browser-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install browser test tools
+        run: |
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Test both homepages at mobile and desktop widths
+        shell: bash
+        run: |
+          python -m http.server 8765 --bind 127.0.0.1 >/tmp/site-server.log 2>&1 &
+          python - <<'PY'
+          from pathlib import Path
+          from playwright.sync_api import sync_playwright
+          Path("screenshots").mkdir(exist_ok=True)
+          with sync_playwright() as p:
+              browser = p.chromium.launch(headless=True)
+              for lang in ("en", "ar"):
+                  for device, width, height in (("mobile", 390, 844), ("desktop", 1440, 900)):
+                      page = browser.new_page(viewport={"width": width, "height": height}, device_scale_factor=1)
+                      response = page.goto(f"http://127.0.0.1:8765/{lang}/", wait_until="load")
+                      assert response and response.status == 200, f"Homepage failed: {lang} {device}"
+                      page.locator(".hero-img img").wait_for(state="visible")
+                      assert page.locator(".hero-img img").evaluate("(img) => img.complete && img.naturalWidth > 0"), f"Hero image failed: {lang} {device}"
+                      assert page.locator("h1").count() >= 1, f"Heading missing: {lang} {device}"
+                      page.evaluate("""async () => {
+                          const step = Math.max(300, window.innerHeight * 0.8);
+                          for (let y = 0; y < document.body.scrollHeight; y += step) {
+                              window.scrollTo(0, y);
+                              await new Promise(resolve => setTimeout(resolve, 80));
+                          }
+                          window.scrollTo(0, 0);
+                      }""")
+                      page.locator("img").evaluate_all("""async images => {
+                          await Promise.all(images.map(img => {
+                              if (img.complete) return Promise.resolve();
+                              return new Promise(resolve => {
+                                  img.addEventListener('load', resolve, {once: true});
+                                  img.addEventListener('error', resolve, {once: true});
+                                  setTimeout(resolve, 10000);
+                              });
+                          }));
+                      }""")
+                      failed = page.locator("img").evaluate_all("(imgs) => imgs.filter(i => !i.complete || i.naturalWidth === 0).map(i => i.currentSrc || i.src)")
+                      assert not failed, f"Images failed: {lang} {device}: {failed}"
+                      page.screenshot(path=f"screenshots/{lang}-{device}.png", full_page=True)
+                      page.close()
+              browser.close()
+          print("Mobile and desktop browser smoke checks passed")
+          PY
+      - name: Save screenshots for visual review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: homepage-browser-screenshots
+          path: screenshots/
+          if-no-files-found: ignore
