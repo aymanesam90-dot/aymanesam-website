@@ -140,7 +140,7 @@ jobs:
             '',
             'Production results are only collected when the deployed hero preload marker is detected. Lab scores vary between runs.',
             ''
-          ].join('\\n');
+          ].join(String.fromCharCode(10));
           fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, summary);
           console.log(summary);
           JS
