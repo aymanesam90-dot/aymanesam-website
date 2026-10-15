@@ -70,6 +70,26 @@ jobs:
                       page.locator(".hero-img img").wait_for(state="visible")
                       assert page.locator(".hero-img img").evaluate("(img) => img.complete && img.naturalWidth > 0"), f"Hero image failed: {lang} {device}"
                       assert page.locator("h1").count() >= 1, f"Heading missing: {lang} {device}"
+                      page.evaluate("""async () => {
+                          const step = Math.max(300, window.innerHeight * 0.8);
+                          for (let y = 0; y < document.body.scrollHeight; y += step) {
+                              window.scrollTo(0, y);
+                              await new Promise(resolve => setTimeout(resolve, 80));
+                          }
+                          window.scrollTo(0, 0);
+                      }""")
+                      page.locator("img").evaluate_all("""async images => {
+                          await Promise.all(images.map(img => {
+                              if (img.complete) return Promise.resolve();
+                              return new Promise(resolve => {
+                                  img.addEventListener('load', resolve, {once: true});
+                                  img.addEventListener('error', resolve, {once: true});
+                                  setTimeout(resolve, 10000);
+                              });
+                          }));
+                      }""")
+                      failed = page.locator("img").evaluate_all("(imgs) => imgs.filter(i => !i.complete || i.naturalWidth === 0).map(i => i.currentSrc || i.src)")
+                      assert not failed, f"Images failed: {lang} {device}: {failed}"
                       page.screenshot(path=f"screenshots/{lang}-{device}.png", full_page=True)
                       page.close()
               browser.close()
