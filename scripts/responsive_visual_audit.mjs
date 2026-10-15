@@ -1,6 +1,6 @@
-const { chromium } = require('playwright');
-const fs = require('node:fs');
-const path = require('node:path');
+import { chromium } from 'playwright';
+import fs from 'node:fs';
+import path from 'node:path';
 
 const cases = [
   { name: 'small-mobile', width: 320, height: 700 },
