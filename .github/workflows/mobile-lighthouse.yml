@@ -104,6 +104,46 @@ jobs:
               'FCP', data.audits['first-contentful-paint']?.displayValue);
           }
           JS
+      - name: Publish bilingual Lighthouse summary
+        if: always()
+        shell: bash
+        run: |
+          node - <<'JS'
+          const fs = require('fs');
+          const rows = [];
+          for (const [label, dir] of [['Local', 'lighthouse-results'], ['Production', 'production-results']]) {
+            for (const lang of ['ar', 'en']) {
+              const path = dir + '/' + lang + '.report.json';
+              if (!fs.existsSync(path)) {
+                rows.push('| ' + label + ' | ' + lang.toUpperCase() + ' | Not available | — | — | — |');
+                continue;
+              }
+              const data = JSON.parse(fs.readFileSync(path, 'utf8'));
+              const value = id => {
+                const n = data.audits?.[id]?.numericValue;
+                return typeof n === 'number' ? (n / (id === 'cumulative-layout-shift' ? 1 : 1000)).toFixed(id === 'cumulative-layout-shift' ? 3 : 2) : '—';
+              };
+              const score = data.categories?.performance?.score;
+              rows.push('| ' + label + ' | ' + lang.toUpperCase() + ' | ' +
+                (typeof score === 'number' ? Math.round(score * 100) : '—') + ' | ' +
+                value('largest-contentful-paint') + ' | ' +
+                value('first-contentful-paint') + ' | ' +
+                value('cumulative-layout-shift') + ' |');
+            }
+          }
+          const summary = [
+            '## Mobile Lighthouse — Arabic & English',
+            '',
+            '| Environment | Language | Performance / 100 | LCP (s) | FCP (s) | CLS |',
+            '|---|---|---:|---:|---:|---:|',
+            ...rows,
+            '',
+            'Production results are only collected when the deployed hero preload marker is detected. Lab scores vary between runs.',
+            ''
+          ].join(String.fromCharCode(10));
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, summary);
+          console.log(summary);
+          JS
       - uses: actions/upload-artifact@v4
         if: always()
         with:
