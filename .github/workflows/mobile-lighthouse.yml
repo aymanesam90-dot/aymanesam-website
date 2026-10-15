@@ -10,7 +10,7 @@ on:
 jobs:
   audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -22,13 +22,17 @@ jobs:
         run: |
           python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/ayman-site.log 2>&1 &
           sleep 2
+      - name: Install stable Chrome
+        uses: browser-actions/setup-chrome@v1
+        with:
+          chrome-version: stable
       - name: Audit Arabic and English mobile pages
         shell: bash
         run: |
           mkdir -p lighthouse-results
           for lang in en ar; do
             ./node_modules/.bin/lighthouse "http://127.0.0.1:8765/$lang/" \
-              --chrome-flags="--headless --no-sandbox --disable-dev-shm-usage" \
+              --chrome-flags="--headless --no-sandbox --disable-dev-shm-usage --disable-gpu --disable-software-rasterizer" \
               --preset=perf \
               --form-factor=mobile \
               --screenEmulation.mobile=true \
@@ -51,6 +55,44 @@ jobs:
               'CLS', metric('cumulative-layout-shift'));
           }
           JS
+      - name: Audit deployed production site (informational)
+        continue-on-error: true
+        shell: bash
+        run: |
+          mkdir -p production-results
+          for lang in en ar; do
+            echo "Auditing live production: $lang"
+            timeout 150 ./node_modules/.bin/lighthouse "https://aymanesam.com/$lang/" \
+              --chrome-flags="--headless --no-sandbox --disable-dev-shm-usage" \
+              --preset=perf \
+              --form-factor=mobile \
+              --screenEmulation.mobile=true \
+              --screenEmulation.width=390 \
+              --screenEmulation.height=844 \
+              --screenEmulation.deviceScaleFactor=1 \
+              --throttling-method=simulate \
+              --output=json --output=html \
+              --output-path="production-results/$lang" \
+              --quiet || echo "Production audit unavailable: $lang"
+          done
+          node - <<'JS'
+          const fs = require('fs');
+          for (const lang of ['en', 'ar']) {
+            const path = 'production-results/' + lang + '.report.json';
+            if (!fs.existsSync(path)) { console.log(lang, 'live audit unavailable'); continue; }
+            const data = JSON.parse(fs.readFileSync(path));
+            const score = data.categories?.performance?.score;
+            console.log(lang, 'LIVE performance', score == null ? 'N/A' : Math.round(score * 100),
+              'LCP', data.audits['largest-contentful-paint']?.displayValue,
+              'FCP', data.audits['first-contentful-paint']?.displayValue);
+          }
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: production-mobile-lighthouse-audits
+          path: production-results/
+          if-no-files-found: ignore
       - uses: actions/upload-artifact@v4
         if: always()
         with:
