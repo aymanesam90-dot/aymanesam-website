@@ -41,6 +41,24 @@ for (const lang of ['ar', 'en']) {
           }
         }
       }
+      if (viewport.width <= 390) {
+        const menu = page.locator('.menu-toggle');
+        const links = page.locator('#site-links');
+        if (await menu.count()) {
+          await menu.focus();
+          if (!(await menu.evaluate(el => el === document.activeElement))) errors.push(`${lang}/${pageName} ${viewport.name}: menu not keyboard focusable`);
+          await page.keyboard.press('Enter');
+          if (await menu.getAttribute('aria-expanded') !== 'true') errors.push(`${lang}/${pageName} ${viewport.name}: Enter failed to open menu`);
+          if (await links.count()) {
+            const firstLink = links.locator('a').first();
+            await firstLink.focus();
+            if (!(await firstLink.evaluate(el => el === document.activeElement))) errors.push(`${lang}/${pageName} ${viewport.name}: navigation link not keyboard focusable`);
+          }
+          await menu.focus();
+          await page.keyboard.press('Space');
+          if (await menu.getAttribute('aria-expanded') !== 'false') errors.push(`${lang}/${pageName} ${viewport.name}: Space failed to close menu`);
+        }
+      }
       const filename = path.join('responsive-results', lang, `${pageName}-${viewport.name}.png`);
       fs.mkdirSync(path.dirname(filename), { recursive: true });
       await page.screenshot({ path: filename, fullPage: true, animations: 'disabled' });
