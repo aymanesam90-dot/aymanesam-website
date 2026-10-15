@@ -40,3 +40,45 @@ jobs:
           print("Homepage CSS, image references, language and canonical checks passed")
 
           PY
+
+  browser-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install browser test tools
+        run: |
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Test both homepages at mobile and desktop widths
+        shell: bash
+        run: |
+          python -m http.server 8765 --bind 127.0.0.1 >/tmp/site-server.log 2>&1 &
+          python - <<'PY'
+          from pathlib import Path
+          from playwright.sync_api import sync_playwright
+          Path("screenshots").mkdir(exist_ok=True)
+          with sync_playwright() as p:
+              browser = p.chromium.launch(headless=True)
+              for lang in ("en", "ar"):
+                  for device, width, height in (("mobile", 390, 844), ("desktop", 1440, 900)):
+                      page = browser.new_page(viewport={"width": width, "height": height}, device_scale_factor=1)
+                      response = page.goto(f"http://127.0.0.1:8765/{lang}/", wait_until="load")
+                      assert response and response.status == 200, f"Homepage failed: {lang} {device}"
+                      page.locator(".hero-img img").wait_for(state="visible")
+                      assert page.locator(".hero-img img").evaluate("(img) => img.complete && img.naturalWidth > 0"), f"Hero image failed: {lang} {device}"
+                      assert page.locator("h1").count() >= 1, f"Heading missing: {lang} {device}"
+                      page.screenshot(path=f"screenshots/{lang}-{device}.png", full_page=True)
+                      page.close()
+              browser.close()
+          print("Mobile and desktop browser smoke checks passed")
+          PY
+      - name: Save screenshots for visual review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: homepage-browser-screenshots
+          path: screenshots/
+          if-no-files-found: ignore
