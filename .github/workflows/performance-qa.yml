@@ -4,11 +4,13 @@ on:
     branches:
       - 'perf/mobile-css-fonts-20261015'
       - 'perf/async-google-fonts-20261015'
+      - 'perf/combine-homepage-css-20261015'
   pull_request:
     paths:
       - 'en/index.html'
       - 'ar/index.html'
       - 'assets/custom-v12-optimized.css'
+      - 'assets/homepage-combined.css'
       - '.github/workflows/performance-qa.yml'
   workflow_dispatch:
 jobs:
@@ -25,12 +27,16 @@ jobs:
           css = Path("assets/custom-v12-optimized.css")
           assert css.exists(), "Optimized CSS missing"
           assert "@import" not in css.read_text(), "CSS import chain reintroduced"
+          combined = Path("assets/homepage-combined.css")
+          assert combined.exists(), "Combined homepage CSS missing"
+          expected = "\n\n".join(f"/* {name} */\n" + Path(name).read_text() for name in ("assets/style.css", "assets/custom-v12-base.css", "assets/custom-v12-optimized.css"))
+          assert combined.read_text() == expected, "Combined CSS differs from original cascade"
           for lang in ("en", "ar"):
               html = Path(lang, "index.html").read_text()
               assert f'<html lang="{lang}"' in html, f"Incorrect language: {lang}"
               assert f'href="https://aymanesam.com/{lang}/"' in html, f"Canonical missing: {lang}"
-              assert 'custom-v12-base.css?v=1' in html, f"Base CSS missing: {lang}"
-              assert 'custom-v12-optimized.css?v=1' in html, f"Optimized CSS missing: {lang}"
+              assert 'homepage-combined.css?v=1' in html, f"Combined CSS missing: {lang}"
+              assert 'custom-v12-base.css?v=1' not in html and 'custom-v12-optimized.css?v=1' not in html, f"Redundant homepage CSS: {lang}"
               assert 'fonts.gstatic.com' in html and 'fonts.googleapis.com' in html, f"Fonts missing: {lang}"
               assert 'as="style"' in html and '<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/' in html, f"Async font loading or fallback missing: {lang}"
               assert 'fetchpriority="high"' in html, f"Hero priority missing: {lang}"
