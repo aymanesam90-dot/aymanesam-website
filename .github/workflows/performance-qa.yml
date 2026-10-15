@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - 'perf/mobile-css-fonts-20261015'
+      - 'perf/async-google-fonts-20261015'
   pull_request:
     paths:
       - 'en/index.html'
@@ -31,6 +32,7 @@ jobs:
               assert 'custom-v12-base.css?v=1' in html, f"Base CSS missing: {lang}"
               assert 'custom-v12-optimized.css?v=1' in html, f"Optimized CSS missing: {lang}"
               assert 'fonts.gstatic.com' in html and 'fonts.googleapis.com' in html, f"Fonts missing: {lang}"
+              assert 'as="style"' in html and '<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/' in html, f"Async font loading or fallback missing: {lang}"
               assert 'fetchpriority="high"' in html, f"Hero priority missing: {lang}"
               assert 'ayman-hero-mobile.webp' in html, f"Mobile hero missing: {lang}"
               assert 'ayman-executive-mobile.webp' in html, f"Mobile executive image missing: {lang}"
