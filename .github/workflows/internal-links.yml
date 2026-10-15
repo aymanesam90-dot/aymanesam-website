@@ -16,3 +16,5 @@ jobs:
         run: python scripts/check_internal_links.py
       - name: Validate XML sitemap
         run: python scripts/check_sitemap.py
+      - name: Validate bilingual accessibility basics
+        run: python scripts/check_page_accessibility.py
