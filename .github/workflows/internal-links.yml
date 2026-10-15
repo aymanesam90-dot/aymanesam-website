@@ -14,3 +14,5 @@ jobs:
           python-version: '3.12'
       - name: Validate links and page anchors
         run: python scripts/check_internal_links.py
+      - name: Validate XML sitemap
+        run: python scripts/check_sitemap.py
