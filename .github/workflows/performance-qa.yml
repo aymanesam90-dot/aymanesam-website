@@ -32,7 +32,9 @@ jobs:
               assert 'custom-v12-optimized.css?v=1' in html, f"Optimized CSS missing: {lang}"
               assert 'fonts.gstatic.com' in html and 'fonts.googleapis.com' in html, f"Fonts missing: {lang}"
               assert 'fetchpriority="high"' in html, f"Hero priority missing: {lang}"
-              for asset in re.findall(r'(?:href|src)="\.\./assets/([^"]+)"', html):
+              assert 'ayman-hero-mobile.webp' in html, f"Mobile hero missing: {lang}"
+              assert 'ayman-executive-mobile.webp' in html, f"Mobile executive image missing: {lang}"
+              for asset in re.findall(r'(?:href|src|srcset)="\.\./assets/([^"]+)"', html):
                   filename = asset.split("?")[0]
                   assert Path("assets", filename).exists(), f"Missing asset {filename} on {lang}"
           print("Homepage CSS, image references, language and canonical checks passed")
