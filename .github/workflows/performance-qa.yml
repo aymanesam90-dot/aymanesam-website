@@ -1,5 +1,8 @@
 name: Homepage performance safeguards
 on:
+  push:
+    branches:
+      - 'perf/mobile-css-fonts-20261015'
   pull_request:
     paths:
       - 'en/index.html'
