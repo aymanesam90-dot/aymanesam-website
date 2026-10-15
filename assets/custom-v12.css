@@ -210,3 +210,8 @@ html[lang="ar"] .client-card b,html[lang="ar"] .company b,html[lang="ar"] .conta
 .client-section .client-prev{left:2px!important;right:auto!important}
 .client-section .client-next{right:2px!important;left:auto!important}
 @media(max-width:560px){.client-section .client-carousel-shell{padding-inline:40px!important}.client-section .client-arrow{width:34px!important;height:34px!important}}
+
+/* Carousel arrows: force both controls inside visible shell */
+.client-section .client-carousel-shell{isolation:isolate!important;overflow:visible!important}
+.client-section .client-carousel-shell>.client-next{position:absolute!important;inset-inline-end:2px!important;inset-inline-start:auto!important;right:2px!important;left:auto!important;display:flex!important;z-index:999!important}
+.client-section .client-carousel-shell>.client-prev{position:absolute!important;inset-inline-start:2px!important;inset-inline-end:auto!important;left:2px!important;right:auto!important;display:flex!important;z-index:999!important}
