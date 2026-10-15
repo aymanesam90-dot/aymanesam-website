@@ -228,3 +228,9 @@ html[lang="ar"] .client-card b,html[lang="ar"] .company b,html[lang="ar"] .conta
 
 /* Experience: selected business outcomes */
 .achievement-section{padding:42px 0 65px;background:#f7f4ee}.achievement-section h2{max-width:780px;color:#17345d;font-size:clamp(25px,3vw,36px);margin:8px 0 12px}.achievement-intro{max-width:850px;color:#586779;line-height:1.8;margin-bottom:24px}.achievement-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}.achievement-card{background:#fff;border:1px solid #e9e1d5;border-radius:15px;padding:22px;box-shadow:0 7px 22px rgba(23,52,93,.04)}.achievement-card strong{display:block;color:#b58a52;font-size:clamp(24px,2.6vw,32px);line-height:1.2;direction:ltr;text-align:start}.achievement-card h3{font-size:17px;color:#17345d;margin:14px 0 8px}.achievement-card p{font-size:14px;color:#526174;line-height:1.75;margin:0}.achievement-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px}@media(max-width:900px){.achievement-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:520px){.achievement-grid{grid-template-columns:1fr}.achievement-section{padding:32px 0 44px}}
+
+/* Keep contact details within narrow mobile viewports (including 320px RTL). */
+.contact-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.contact-card{min-width:0}
+.contact-card a,.contact-card strong{overflow-wrap:anywhere}
+@media(max-width:900px){.contact-grid{grid-template-columns:minmax(0,1fr)}}
