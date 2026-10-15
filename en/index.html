@@ -7,13 +7,18 @@
  const prev=section.querySelector('.client-prev'),next=section.querySelector('.client-next'),dots=section.querySelector('.client-dots');
  const copies=original.map(el=>el.cloneNode(true));copies.forEach(el=>{el.setAttribute('aria-hidden','true');track.appendChild(el)});
  let position=0,last=0,raf=0,paused=false;
+ const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
  const speed=38;
- function loop(t){if(!last)last=t;const dt=Math.min(t-last,80);last=t;if(!paused){position+=speed*dt/1000;const cycle=track.scrollWidth/2;if(cycle>0&&position>=cycle)position-=cycle;viewport.scrollLeft=position}raf=requestAnimationFrame(loop)}
+ function loop(t){if(!last)last=t;const dt=Math.min(t-last,80);last=t;if(!paused&&!reducedMotion.matches){position+=speed*dt/1000;const cycle=track.scrollWidth/2;if(cycle>0&&position>=cycle)position-=cycle;viewport.scrollLeft=position}raf=requestAnimationFrame(loop)}
  function shift(dir){const width=original[0].getBoundingClientRect().width+parseFloat(getComputedStyle(track).gap||'0');const cycle=track.scrollWidth/2;position=(position+dir*width+cycle)%cycle;viewport.scrollLeft=position}
  if(prev)prev.onclick=()=>shift(-1);if(next)next.onclick=()=>shift(1);
  if(dots)dots.innerHTML='';
  viewport.style.scrollBehavior='auto';track.style.scrollBehavior='auto';
- document.addEventListener('visibilitychange',()=>{paused=document.hidden;last=0});
+ section.addEventListener('mouseenter',()=>{paused=true});
+ section.addEventListener('mouseleave',()=>{paused=false;last=0});
+ section.addEventListener('focusin',()=>{paused=true});
+ section.addEventListener('focusout',()=>{paused=section.contains(document.activeElement);last=0});
+ document.addEventListener('visibilitychange',()=>{last=0});
  window.addEventListener('resize',()=>{position=0;viewport.scrollLeft=0;last=0});
  raf=requestAnimationFrame(loop);
  })();</script><script>(function(){const b=document.querySelector('.menu-toggle'),l=document.querySelector('.links');if(!b||!l)return;b.addEventListener('click',()=>{const o=b.getAttribute('aria-expanded')==='true';b.setAttribute('aria-expanded',String(!o));l.classList.toggle('open',!o)});l.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{b.setAttribute('aria-expanded','false');l.classList.remove('open')}));})();</script></body></html>
