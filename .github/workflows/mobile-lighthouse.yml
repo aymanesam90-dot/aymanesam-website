@@ -55,7 +55,24 @@ jobs:
               'CLS', metric('cumulative-layout-shift'));
           }
           JS
+      - name: Verify production contains latest hero preload
+        id: production-deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+          ready=true
+          for lang in en ar; do
+            html=$(curl -fsSL --max-time 25 --retry 2 "https://aymanesam.com/$lang/" || true)
+            if [[ "$html" == *'ayman-hero-mobile.webp'* && "$html" == *'fetchpriority="high"'* ]]; then
+              echo "$lang: hero preload priority found on production"
+            else
+              echo "::warning::$lang production HTML does not yet contain expected hero preload priority"
+              ready=false
+            fi
+          done
+          echo "ready=$ready" >> "$GITHUB_OUTPUT"
       - name: Audit deployed production site (informational)
+        if: steps.production-deployment.outputs.ready == 'true'
         continue-on-error: true
         shell: bash
         run: |
