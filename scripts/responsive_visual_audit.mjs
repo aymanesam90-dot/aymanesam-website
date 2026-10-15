@@ -26,6 +26,21 @@ for (const lang of ['ar', 'en']) {
       if (!response?.ok()) errors.push(`${url}: HTTP ${response?.status()}`);
       if (info.scrollWidth > info.clientWidth + 2) errors.push(`${lang}/${pageName} ${viewport.name}: horizontal overflow ${info.scrollWidth} > ${info.clientWidth}`);
       if (!info.heading) errors.push(`${lang}/${pageName}: missing h1`);
+      if (viewport.width <= 390) {
+        const menu = page.locator('.menu-toggle');
+        const links = page.locator('#site-links');
+        if (await menu.count()) {
+          if (await menu.getAttribute('aria-expanded') !== 'false') errors.push(`${lang}/${pageName} ${viewport.name}: menu not initially collapsed`);
+          await menu.click();
+          if (await menu.getAttribute('aria-expanded') !== 'true' || !(await links.evaluate(el => el.classList.contains('open')))) {
+            errors.push(`${lang}/${pageName} ${viewport.name}: menu failed to open`);
+          }
+          await menu.click();
+          if (await menu.getAttribute('aria-expanded') !== 'false' || await links.evaluate(el => el.classList.contains('open'))) {
+            errors.push(`${lang}/${pageName} ${viewport.name}: menu failed to close`);
+          }
+        }
+      }
       const filename = path.join('responsive-results', lang, `${pageName}-${viewport.name}.png`);
       fs.mkdirSync(path.dirname(filename), { recursive: true });
       await page.screenshot({ path: filename, fullPage: true, animations: 'disabled' });
