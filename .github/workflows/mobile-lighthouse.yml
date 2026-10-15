@@ -22,13 +22,17 @@ jobs:
         run: |
           python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/ayman-site.log 2>&1 &
           sleep 2
+      - name: Install stable Chrome
+        uses: browser-actions/setup-chrome@v1
+        with:
+          chrome-version: stable
       - name: Audit Arabic and English mobile pages
         shell: bash
         run: |
           mkdir -p lighthouse-results
           for lang in en ar; do
             ./node_modules/.bin/lighthouse "http://127.0.0.1:8765/$lang/" \
-              --chrome-flags="--headless --no-sandbox --disable-dev-shm-usage" \
+              --chrome-flags="--headless --no-sandbox --disable-dev-shm-usage --disable-gpu --disable-software-rasterizer" \
               --preset=perf \
               --form-factor=mobile \
               --screenEmulation.mobile=true \
