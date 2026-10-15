@@ -16,8 +16,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Validate homepage assets and SEO metadata
-        shell: python
+        shell: bash
         run: |
+          python - <<'PY'
           from pathlib import Path
           import re
           css = Path("assets/custom-v12-optimized.css")
@@ -35,3 +36,5 @@ jobs:
                   filename = asset.split("?")[0]
                   assert Path("assets", filename).exists(), f"Missing asset {filename} on {lang}"
           print("Homepage CSS, image references, language and canonical checks passed")
+
+          PY
