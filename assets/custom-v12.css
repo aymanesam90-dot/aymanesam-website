@@ -202,3 +202,11 @@ html[lang="ar"] .client-card b,html[lang="ar"] .company b,html[lang="ar"] .conta
 .client-section .client-card{box-sizing:border-box!important;flex:0 0 420px!important;width:420px!important;min-height:218px!important;display:flex!important;flex-direction:column!important;justify-content:center!important}
 .client-section .client-dots{display:none!important}
 @media(max-width:700px){.client-section .client-card{flex-basis:270px!important;width:270px!important;min-height:170px!important}}
+
+/* Both carousel navigation arrows, fixed to viewport edges */
+.client-section .client-carousel-shell{position:relative!important;padding-inline:54px!important;display:block!important}
+.client-section .client-carousel-viewport{width:100%!important;min-width:0!important}
+.client-section .client-arrow{position:absolute!important;top:50%!important;transform:translateY(-50%)!important;z-index:12!important;display:flex!important;align-items:center!important;justify-content:center!important;width:42px!important;height:42px!important;border-radius:50%!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important}
+.client-section .client-prev{left:2px!important;right:auto!important}
+.client-section .client-next{right:2px!important;left:auto!important}
+@media(max-width:560px){.client-section .client-carousel-shell{padding-inline:40px!important}.client-section .client-arrow{width:34px!important;height:34px!important}}
