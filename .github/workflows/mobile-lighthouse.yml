@@ -1,0 +1,59 @@
+name: Mobile Lighthouse performance audit
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'en/index.html'
+      - 'ar/index.html'
+      - 'assets/homepage-combined.css'
+      - '.github/workflows/mobile-lighthouse.yml'
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Lighthouse
+        run: npm install --no-save lighthouse@12
+      - name: Serve local website
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/ayman-site.log 2>&1 &
+          sleep 2
+      - name: Audit Arabic and English mobile pages
+        shell: bash
+        run: |
+          mkdir -p lighthouse-results
+          for lang in en ar; do
+            ./node_modules/.bin/lighthouse "http://127.0.0.1:8765/$lang/" \
+              --chrome-flags="--headless --no-sandbox --disable-dev-shm-usage" \
+              --preset=perf \
+              --form-factor=mobile \
+              --screenEmulation.mobile=true \
+              --screenEmulation.width=390 \
+              --screenEmulation.height=844 \
+              --screenEmulation.deviceScaleFactor=1 \
+              --throttling-method=simulate \
+              --output=json --output=html \
+              --output-path="lighthouse-results/$lang" \
+              --quiet
+          done
+          node - <<'JS'
+          const fs = require('fs');
+          for (const lang of ['en', 'ar']) {
+            const data = JSON.parse(fs.readFileSync('lighthouse-results/' + lang + '.report.json'));
+            const metric = id => data.audits[id]?.displayValue || 'N/A';
+            console.log(lang.toUpperCase(), 'Performance', Math.round(data.categories.performance.score * 100),
+              'LCP', metric('largest-contentful-paint'),
+              'FCP', metric('first-contentful-paint'),
+              'CLS', metric('cumulative-layout-shift'));
+          }
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mobile-lighthouse-audits
+          path: lighthouse-results/
+          if-no-files-found: ignore
