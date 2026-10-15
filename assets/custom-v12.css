@@ -195,3 +195,10 @@ html[lang="ar"] .client-card b,html[lang="ar"] .company b,html[lang="ar"] .conta
 .executive-panel .portrait-small picture img{display:block!important;width:100%!important;height:100%!important;max-height:none!important;object-fit:cover!important;object-position:center 25%!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important}
 @media(max-width:850px){.executive-panel .portrait-small{max-width:360px!important;height:430px!important;min-height:430px!important;border-radius:24px!important}}
 @media(max-width:560px){.executive-panel .portrait-small{max-width:300px!important;height:360px!important;min-height:360px!important;border-radius:20px!important}}
+
+/* Continuous organizations marquee */
+.client-section .client-carousel-viewport{overflow:hidden!important;scroll-behavior:auto!important;direction:ltr!important}
+.client-section .client-grid{display:flex!important;flex-wrap:nowrap!important;grid-template-columns:none!important;width:max-content!important;gap:20px!important;align-items:stretch!important;transform:none!important}
+.client-section .client-card{box-sizing:border-box!important;flex:0 0 420px!important;width:420px!important;min-height:218px!important;display:flex!important;flex-direction:column!important;justify-content:center!important}
+.client-section .client-dots{display:none!important}
+@media(max-width:700px){.client-section .client-card{flex-basis:270px!important;width:270px!important;min-height:170px!important}}
