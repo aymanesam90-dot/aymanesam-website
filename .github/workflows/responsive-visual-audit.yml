@@ -6,8 +6,10 @@ on:
       - 'scripts/responsive_visual_audit.mjs'
       - '.github/workflows/responsive-visual-audit.yml'
       - 'assets/custom-v12.css'
-      - 'ar/contact.html'
-      - 'en/contact.html'
+      - 'assets/style.css'
+      - 'assets/homepage-combined.css'
+      - 'ar/*.html'
+      - 'en/*.html'
 jobs:
   responsive:
     runs-on: ubuntu-latest
