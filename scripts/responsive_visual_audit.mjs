@@ -197,6 +197,23 @@ for (const lang of ['ar', 'en']) {
       if (!info.heading) errors.push(`${lang}/insights/${slug}: missing h1`);
       if (info.lang !== lang) errors.push(`${lang}/insights/${slug}: incorrect document language ${info.lang}`);
       if (!info.main) errors.push(`${lang}/insights/${slug}: missing main landmark`);
+      if (viewport.width === 390) {
+        const otherLang = lang === 'ar' ? 'en' : 'ar';
+        const expectedHref = `../../${otherLang}/insights/${slug}.html`;
+        const switcher = page.locator(`a[href="${expectedHref}"]`);
+        if (await switcher.count() !== 1) {
+          errors.push(`${lang}/insights/${slug}: expected exactly one language switch to corresponding article`);
+        } else {
+          const destination = new URL(expectedHref, url);
+          const translated = await page.request.get(destination.href);
+          if (!translated.ok()) errors.push(`${lang}/insights/${slug}: translated article HTTP ${translated.status()}`);
+          else if (!new RegExp(`<html[^>]+lang=["']${otherLang}["']`, 'i').test(await translated.text())) {
+            errors.push(`${lang}/insights/${slug}: translated article language is incorrect`);
+          }
+        }
+        const back = page.locator('a[href="../insights.html"]');
+        if (!(await back.count())) errors.push(`${lang}/insights/${slug}: missing link back to insights index`);
+      }
       const filename = path.join('responsive-results', lang, 'articles', `${slug}-${viewport.name}.png`);
       fs.mkdirSync(path.dirname(filename), { recursive: true });
       await page.screenshot({ path: filename, fullPage: true, animations: 'disabled' });
