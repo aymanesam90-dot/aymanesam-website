@@ -141,6 +141,24 @@ for (const lang of ['ar', 'en']) {
           }
         }
       }
+      if (viewport.width === 390) {
+        const nav = page.locator('#site-links');
+        const expectedPages = ['index', 'about', 'expertise', 'experience', 'education', 'certifications', 'insights', 'contact'];
+        if (await nav.count()) {
+          for (const target of expectedPages) {
+            const link = nav.locator(`a[href="${target}.html"]`);
+            if (await link.count() !== 1) {
+              errors.push(`${lang}/${pageName}: expected one mobile navigation link to ${target}.html`);
+            } else {
+              const destination = new URL(`${target}.html`, url);
+              const destinationResponse = await page.request.get(destination.href);
+              if (!destinationResponse.ok()) errors.push(`${lang}/${pageName}: navigation target ${target}.html returned HTTP ${destinationResponse.status()}`);
+            }
+          }
+        } else {
+          errors.push(`${lang}/${pageName}: mobile navigation links container missing`);
+        }
+      }
       const filename = path.join('responsive-results', lang, `${pageName}-${viewport.name}.png`);
       fs.mkdirSync(path.dirname(filename), { recursive: true });
       await page.screenshot({ path: filename, fullPage: true, animations: 'disabled' });
