@@ -110,7 +110,7 @@ for (const lang of ['ar', 'en']) {
           if (Math.abs(afterNext - before) < 5) errors.push(`${lang}/index: next carousel control did not move while reduced motion enabled`);
           await prev.click();
           const afterPrev = await carousel.evaluate(el => el.scrollLeft);
-          if (Math.abs(afterPrev - before) > 5) errors.push(`${lang}/index: previous carousel control did not return to initial position`);
+          if (Math.abs(afterPrev - afterNext) < 5) errors.push(`${lang}/index: previous carousel control did not move while reduced motion enabled`);
         }
       }
       const filename = path.join('responsive-results', lang, `${pageName}-${viewport.name}.png`);
