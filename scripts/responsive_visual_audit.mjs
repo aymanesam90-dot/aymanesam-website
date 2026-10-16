@@ -198,6 +198,11 @@ for (const lang of ['ar', 'en']) {
       if (info.lang !== lang) errors.push(`${lang}/insights/${slug}: incorrect document language ${info.lang}`);
       if (!info.main) errors.push(`${lang}/insights/${slug}: missing main landmark`);
       if (viewport.width === 390) {
+        const skip = page.locator('a.skip-link[href="#main"]');
+        if (await skip.count() !== 1) errors.push(`${lang}/insights/${slug}: missing skip-to-content link`);
+        else if (!(await page.locator('main#main').count())) errors.push(`${lang}/insights/${slug}: skip link target missing`);
+      }
+      if (viewport.width === 390) {
         const seo = await page.evaluate(() => ({
           title: document.title.trim(),
           description: document.querySelector('meta[name="description"]')?.content?.trim() || '',
