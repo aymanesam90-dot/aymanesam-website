@@ -221,6 +221,18 @@ for (const lang of ['ar', 'en']) {
           errors.push(`${lang}/insights/${slug}: social preview image URL must be HTTPS`);
         }
         if (!social.twitterCard) errors.push(`${lang}/insights/${slug}: missing Twitter card type`);
+        for (const [kind, imageUrl] of [['Open Graph', social.ogImage], ['Twitter', social.twitterImage]]) {
+          if (imageUrl.startsWith('https://aymanesam.com/assets/')) {
+            const assetUrl = new URL(imageUrl);
+            const localAsset = `http://127.0.0.1:8765${assetUrl.pathname}`;
+            const assetResponse = await page.request.get(localAsset);
+            if (!assetResponse.ok()) errors.push(`${lang}/insights/${slug}: ${kind} image asset returned HTTP ${assetResponse.status()}`);
+            else if (!(assetResponse.headers()['content-type'] || '').startsWith('image/')) {
+              errors.push(`${lang}/insights/${slug}: ${kind} image asset is not served as an image`);
+            }
+          }
+        }
+
 
         if (seo.canonical !== canonical) errors.push(`${lang}/insights/${slug}: unexpected canonical ${seo.canonical}`);
         for (const translatedLang of ['ar', 'en']) {
