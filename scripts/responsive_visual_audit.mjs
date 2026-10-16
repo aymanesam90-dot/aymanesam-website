@@ -167,6 +167,45 @@ for (const lang of ['ar', 'en']) {
     }
   }
 }
+// Audit every bilingual article at small/mobile widths as well as the five primary pages.
+const articleSlugs = [
+  'cash-flow-liquidity-rhythm',
+  'fp-and-a-for-better-decisions',
+  'cash-flow-discipline',
+  'finance-transformation',
+  'budgeting-as-management-system',
+  'working-capital-discipline',
+  'month-end-close-discipline',
+];
+let articleScreenshots = 0;
+for (const lang of ['ar', 'en']) {
+  for (const slug of articleSlugs) {
+    for (const viewport of cases.filter(v => v.width <= 390)) {
+      const page = await browser.newPage({ viewport: { width: viewport.width, height: viewport.height }, deviceScaleFactor: 1 });
+      const url = `http://127.0.0.1:8765/${lang}/insights/${slug}.html`;
+      const response = await page.goto(url, { waitUntil: 'networkidle' });
+      await page.evaluate(() => document.fonts.ready);
+      const info = await page.evaluate(() => ({
+        scrollWidth: document.documentElement.scrollWidth,
+        clientWidth: document.documentElement.clientWidth,
+        heading: document.querySelector('h1')?.textContent?.trim() || '',
+        lang: document.documentElement.lang,
+        main: !!document.querySelector('main'),
+      }));
+      if (!response?.ok()) errors.push(`${lang}/insights/${slug}: HTTP ${response?.status()}`);
+      if (info.scrollWidth > info.clientWidth + 2) errors.push(`${lang}/insights/${slug} ${viewport.name}: horizontal overflow ${info.scrollWidth} > ${info.clientWidth}`);
+      if (!info.heading) errors.push(`${lang}/insights/${slug}: missing h1`);
+      if (info.lang !== lang) errors.push(`${lang}/insights/${slug}: incorrect document language ${info.lang}`);
+      if (!info.main) errors.push(`${lang}/insights/${slug}: missing main landmark`);
+      const filename = path.join('responsive-results', lang, 'articles', `${slug}-${viewport.name}.png`);
+      fs.mkdirSync(path.dirname(filename), { recursive: true });
+      await page.screenshot({ path: filename, fullPage: true, animations: 'disabled' });
+      articleScreenshots++;
+      await page.close();
+    }
+  }
+}
+console.log(`Captured ${articleScreenshots} additional bilingual article screenshots.`);
 await browser.close();
 console.log(`Captured ${2 * pages.length * cases.length} screenshots.`);
 for (const error of errors) console.error('ERROR:', error);
