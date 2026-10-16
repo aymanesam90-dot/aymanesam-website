@@ -96,6 +96,23 @@ for (const lang of ['ar', 'en']) {
           }
         }
       }
+      if (pageName === 'index' && viewport.width === 1440) {
+        await page.emulateMedia({ reducedMotion: 'reduce' });
+        const carousel = page.locator('.client-carousel-viewport');
+        const next = page.locator('.client-next');
+        const prev = page.locator('.client-prev');
+        if (await carousel.count() && await next.count() && await prev.count()) {
+          await carousel.evaluate(el => { el.scrollLeft = 0; });
+          await page.waitForTimeout(100);
+          const before = await carousel.evaluate(el => el.scrollLeft);
+          await next.click();
+          const afterNext = await carousel.evaluate(el => el.scrollLeft);
+          if (Math.abs(afterNext - before) < 5) errors.push(`${lang}/index: next carousel control did not move while reduced motion enabled`);
+          await prev.click();
+          const afterPrev = await carousel.evaluate(el => el.scrollLeft);
+          if (Math.abs(afterPrev - afterNext) < 5) errors.push(`${lang}/index: previous carousel control did not move while reduced motion enabled`);
+        }
+      }
       const filename = path.join('responsive-results', lang, `${pageName}-${viewport.name}.png`);
       fs.mkdirSync(path.dirname(filename), { recursive: true });
       await page.screenshot({ path: filename, fullPage: true, animations: 'disabled' });
