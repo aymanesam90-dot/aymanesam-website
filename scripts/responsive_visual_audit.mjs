@@ -201,6 +201,17 @@ for (const lang of ['ar', 'en']) {
         const skip = page.locator('a.skip-link[href="#main"]');
         if (await skip.count() !== 1) errors.push(`${lang}/insights/${slug}: missing skip-to-content link`);
         else if (!(await page.locator('main#main').count())) errors.push(`${lang}/insights/${slug}: skip link target missing`);
+        else {
+          await page.keyboard.press('Tab');
+          if (!(await skip.evaluate(el => el === document.activeElement))) {
+            errors.push(`${lang}/insights/${slug}: skip link is not first keyboard focus target`);
+          } else {
+            await page.keyboard.press('Enter');
+            if (new URL(page.url()).hash !== '#main') {
+              errors.push(`${lang}/insights/${slug}: skip link keyboard activation did not navigate to main`);
+            }
+          }
+        }
       }
       if (viewport.width === 390) {
         const seo = await page.evaluate(() => ({
