@@ -73,6 +73,29 @@ for (const lang of ['ar', 'en']) {
           }
         }
       }
+      if (pageName === 'index' && viewport.width === 1440) {
+        const section = page.locator('.client-section');
+        const carousel = page.locator('.client-carousel-viewport');
+        if (await section.count() && await carousel.count()) {
+          const read = () => carousel.evaluate(el => el.scrollLeft);
+          await section.hover();
+          await page.waitForTimeout(150);
+          const hoverStart = await read();
+          await page.waitForTimeout(350);
+          const hoverEnd = await read();
+          if (Math.abs(hoverEnd - hoverStart) > 2) errors.push(`${lang}/index: carousel moves while hovered (${hoverStart} -> ${hoverEnd})`);
+          await page.mouse.move(0, 0);
+          const next = section.locator('.client-next');
+          if (await next.count()) {
+            await next.focus();
+            await page.waitForTimeout(150);
+            const focusStart = await read();
+            await page.waitForTimeout(350);
+            const focusEnd = await read();
+            if (Math.abs(focusEnd - focusStart) > 2) errors.push(`${lang}/index: carousel moves during keyboard focus (${focusStart} -> ${focusEnd})`);
+          }
+        }
+      }
       const filename = path.join('responsive-results', lang, `${pageName}-${viewport.name}.png`);
       fs.mkdirSync(path.dirname(filename), { recursive: true });
       await page.screenshot({ path: filename, fullPage: true, animations: 'disabled' });
