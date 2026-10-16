@@ -198,6 +198,24 @@ for (const lang of ['ar', 'en']) {
       if (info.lang !== lang) errors.push(`${lang}/insights/${slug}: incorrect document language ${info.lang}`);
       if (!info.main) errors.push(`${lang}/insights/${slug}: missing main landmark`);
       if (viewport.width === 390) {
+        const seo = await page.evaluate(() => ({
+          title: document.title.trim(),
+          description: document.querySelector('meta[name="description"]')?.content?.trim() || '',
+          canonical: document.querySelector('link[rel="canonical"]')?.href || '',
+          alternates: Array.from(document.querySelectorAll('link[rel="alternate"][hreflang]')).map(el => ({ lang: el.hreflang, href: el.href })),
+        }));
+        if (!seo.title) errors.push(`${lang}/insights/${slug}: missing page title`);
+        if (!seo.description) errors.push(`${lang}/insights/${slug}: missing meta description`);
+        const canonical = `https://aymanesam.com/${lang}/insights/${slug}`;
+        if (seo.canonical !== canonical) errors.push(`${lang}/insights/${slug}: unexpected canonical ${seo.canonical}`);
+        for (const translatedLang of ['ar', 'en']) {
+          const expected = `https://aymanesam.com/${translatedLang}/insights/${slug}`;
+          if (!seo.alternates.some(a => a.lang === translatedLang && a.href === expected)) {
+            errors.push(`${lang}/insights/${slug}: missing ${translatedLang} hreflang alternate`);
+          }
+        }
+      }
+      if (viewport.width === 390) {
         const otherLang = lang === 'ar' ? 'en' : 'ar';
         const expectedHref = `../../${otherLang}/insights/${slug}.html`;
         const switcher = page.locator(`a[href="${expectedHref}"]`);
