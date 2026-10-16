@@ -214,6 +214,24 @@ for (const lang of ['ar', 'en']) {
         const back = page.locator('a[href="../insights.html"]');
         if (!(await back.count())) errors.push(`${lang}/insights/${slug}: missing link back to insights index`);
       }
+      if (viewport.width === 390) {
+        const menu = page.locator('.menu-toggle');
+        const links = page.locator('#site-links');
+        if (await menu.count() !== 1 || await links.count() !== 1) {
+          errors.push(`${lang}/insights/${slug}: mobile menu controls missing`);
+        } else {
+          if (await menu.getAttribute('aria-expanded') !== 'false') errors.push(`${lang}/insights/${slug}: menu initially expanded`);
+          await menu.focus();
+          await page.keyboard.press('Enter');
+          if (await menu.getAttribute('aria-expanded') !== 'true' || !(await links.evaluate(el => el.classList.contains('open')))) {
+            errors.push(`${lang}/insights/${slug}: keyboard Enter failed to open mobile menu`);
+          }
+          await page.keyboard.press('Enter');
+          if (await menu.getAttribute('aria-expanded') !== 'false' || await links.evaluate(el => el.classList.contains('open'))) {
+            errors.push(`${lang}/insights/${slug}: keyboard Enter failed to close mobile menu`);
+          }
+        }
+      }
       const filename = path.join('responsive-results', lang, 'articles', `${slug}-${viewport.name}.png`);
       fs.mkdirSync(path.dirname(filename), { recursive: true });
       await page.screenshot({ path: filename, fullPage: true, animations: 'disabled' });
