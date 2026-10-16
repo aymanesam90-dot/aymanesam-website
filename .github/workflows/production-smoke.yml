@@ -1,5 +1,9 @@
 name: Production smoke verification
 on:
+  pull_request:
+    paths:
+      - 'scripts/check_production.py'
+      - '.github/workflows/production-smoke.yml'
   workflow_dispatch:
   schedule:
     - cron: '15 7 * * 1'
