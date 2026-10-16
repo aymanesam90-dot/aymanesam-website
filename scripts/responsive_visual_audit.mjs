@@ -206,7 +206,22 @@ for (const lang of ['ar', 'en']) {
         }));
         if (!seo.title) errors.push(`${lang}/insights/${slug}: missing page title`);
         if (!seo.description) errors.push(`${lang}/insights/${slug}: missing meta description`);
+        const social = await page.evaluate(() => ({
+          ogTitle: document.querySelector('meta[property="og:title"]')?.content?.trim() || '',
+          ogDescription: document.querySelector('meta[property="og:description"]')?.content?.trim() || '',
+          ogUrl: document.querySelector('meta[property="og:url"]')?.content || '',
+          ogImage: document.querySelector('meta[property="og:image"]')?.content || '',
+          twitterCard: document.querySelector('meta[name="twitter:card"]')?.content || '',
+          twitterImage: document.querySelector('meta[name="twitter:image"]')?.content || '',
+        }));
         const canonical = `https://aymanesam.com/${lang}/insights/${slug}`;
+        if (!social.ogTitle || !social.ogDescription) errors.push(`${lang}/insights/${slug}: missing Open Graph title or description`);
+        if (social.ogUrl !== canonical) errors.push(`${lang}/insights/${slug}: Open Graph URL does not match canonical`);
+        if (!social.ogImage.startsWith('https://') || !social.twitterImage.startsWith('https://')) {
+          errors.push(`${lang}/insights/${slug}: social preview image URL must be HTTPS`);
+        }
+        if (!social.twitterCard) errors.push(`${lang}/insights/${slug}: missing Twitter card type`);
+
         if (seo.canonical !== canonical) errors.push(`${lang}/insights/${slug}: unexpected canonical ${seo.canonical}`);
         for (const translatedLang of ['ar', 'en']) {
           const expected = `https://aymanesam.com/${translatedLang}/insights/${slug}`;
