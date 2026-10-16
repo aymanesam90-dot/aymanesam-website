@@ -8,7 +8,7 @@ const cases = [
   { name: 'tablet', width: 768, height: 1024 },
   { name: 'desktop', width: 1440, height: 900 },
 ];
-const pages = ['index', 'experience', 'certifications', 'insights', 'contact'];
+const pages = ['index', 'about', 'expertise', 'experience', 'education', 'certifications', 'insights', 'contact'];
 const browser = await chromium.launch({ headless: true });
 const errors = [];
 for (const lang of ['ar', 'en']) {
