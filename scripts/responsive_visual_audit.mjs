@@ -26,6 +26,23 @@ for (const lang of ['ar', 'en']) {
       if (!response?.ok()) errors.push(`${url}: HTTP ${response?.status()}`);
       if (info.scrollWidth > info.clientWidth + 2) errors.push(`${lang}/${pageName} ${viewport.name}: horizontal overflow ${info.scrollWidth} > ${info.clientWidth}`);
       if (!info.heading) errors.push(`${lang}/${pageName}: missing h1`);
+      if (viewport.width === 390) {
+        const skip = page.locator('a.skip-link[href="#main"]');
+        if (await skip.count() !== 1 || !(await page.locator('main#main').count())) {
+          errors.push(`${lang}/${pageName}: missing accessible skip link or main target`);
+        } else {
+          await page.keyboard.press('Tab');
+          if (!(await skip.evaluate(el => el === document.activeElement))) {
+            errors.push(`${lang}/${pageName}: skip link is not first keyboard focus target`);
+          } else {
+            await page.keyboard.press('Enter');
+            if (new URL(page.url()).hash !== '#main') {
+              errors.push(`${lang}/${pageName}: skip link Enter did not navigate to main`);
+            }
+          }
+        }
+      }
+
       if (viewport.width <= 390) {
         const menu = page.locator('.menu-toggle');
         const links = page.locator('#site-links');
