@@ -59,6 +59,20 @@ for (const lang of ['ar', 'en']) {
           if (await menu.getAttribute('aria-expanded') !== 'false') errors.push(`${lang}/${pageName} ${viewport.name}: Space failed to close menu`);
         }
       }
+      if (pageName === 'index' && viewport.width === 390) {
+        await page.emulateMedia({ reducedMotion: 'reduce' });
+        const carousel = page.locator('.client-carousel-viewport');
+        if (await carousel.count()) {
+          await carousel.evaluate(el => { el.scrollLeft = 0; });
+          await page.waitForTimeout(350);
+          const start = await carousel.evaluate(el => el.scrollLeft);
+          await page.waitForTimeout(450);
+          const end = await carousel.evaluate(el => el.scrollLeft);
+          if (Math.abs(end - start) > 2) {
+            errors.push(`${lang}/index: carousel auto-scrolls despite reduced-motion preference (${start} -> ${end})`);
+          }
+        }
+      }
       const filename = path.join('responsive-results', lang, `${pageName}-${viewport.name}.png`);
       fs.mkdirSync(path.dirname(filename), { recursive: true });
       await page.screenshot({ path: filename, fullPage: true, animations: 'disabled' });
