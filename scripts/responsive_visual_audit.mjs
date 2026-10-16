@@ -113,6 +113,34 @@ for (const lang of ['ar', 'en']) {
           if (Math.abs(afterPrev - afterNext) < 5) errors.push(`${lang}/index: previous carousel control did not move while reduced motion enabled`);
         }
       }
+      if (viewport.width === 390 && ['index', 'contact'].includes(pageName)) {
+        const switcher = page.locator(`a[href="../${lang === 'ar' ? 'en' : 'ar'}/${pageName}.html"]`);
+        if (await switcher.count() !== 1) {
+          errors.push(`${lang}/${pageName}: expected one language switch link to equivalent page`);
+        } else {
+          const target = await switcher.getAttribute('href');
+          const expectedLang = lang === 'ar' ? 'en' : 'ar';
+          const resolved = new URL(target, url);
+          const languageResponse = await page.request.get(resolved.href);
+          if (!languageResponse.ok()) errors.push(`${lang}/${pageName}: language switch target returned HTTP ${languageResponse.status()}`);
+          const targetHtml = await languageResponse.text();
+          if (!new RegExp(`<html[^>]+lang=["']${expectedLang}["']`, 'i').test(targetHtml)) {
+            errors.push(`${lang}/${pageName}: language switch target has incorrect html lang`);
+          }
+        }
+      }
+      if (pageName === 'contact' && viewport.width === 390) {
+        const email = page.locator('a[href^="mailto:"]');
+        const phone = page.locator('a[href^="tel:"]');
+        if (!(await email.count())) errors.push(`${lang}/contact: no actionable email link`);
+        if (!(await phone.count())) errors.push(`${lang}/contact: no actionable phone link`);
+        for (const link of [email.first(), phone.first()]) {
+          if (await link.count()) {
+            const href = await link.getAttribute('href');
+            if (!href || /\\s/.test(href) || /^(mailto:|tel:)$/.test(href)) errors.push(`${lang}/contact: invalid contact action ${href}`);
+          }
+        }
+      }
       const filename = path.join('responsive-results', lang, `${pageName}-${viewport.name}.png`);
       fs.mkdirSync(path.dirname(filename), { recursive: true });
       await page.screenshot({ path: filename, fullPage: true, animations: 'disabled' });
