@@ -35,7 +35,7 @@ for url in urls:
     if not match or match.group(1) != url:
         errors.append(f"Canonical mismatch: {url}")
     # Validate every embedded JSON-LD block, not just page metadata.
-    blocks = re.findall(r'<script\\b[^>]*type=["\\\']application/ld\\+json["\\\'][^>]*>([\\s\\S]*?)</script>', html, flags=re.I)
+    blocks = re.findall(r'<script[^>]*type="application/ld[+]json"[^>]*>(.*?)</script>', html, flags=re.I | re.S)
     for number, block in enumerate(blocks, 1):
         try:
             json.loads(block)
