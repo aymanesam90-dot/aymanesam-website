@@ -3,6 +3,7 @@
 from pathlib import Path
 from urllib.parse import urlparse
 import re
+import json
 import sys
 import xml.etree.ElementTree as ET
 
@@ -33,6 +34,36 @@ for url in urls:
     match = re.search(r'<link\s+rel="canonical"\s+href="([^"]+)"', html)
     if not match or match.group(1) != url:
         errors.append(f"Canonical mismatch: {url}")
+    # Validate every embedded JSON-LD block, not just page metadata.
+    blocks = re.findall(r'<script\\b[^>]*type=["\\\']application/ld\\+json["\\\'][^>]*>([\\s\\S]*?)</script>', html, flags=re.I)
+    for number, block in enumerate(blocks, 1):
+        try:
+            json.loads(block)
+        except json.JSONDecodeError as exc:
+            errors.append(f"Invalid JSON-LD in {url} (block {number}): {exc.msg}")
+    if route in ("/ar/", "/en/"):
+        people = []
+        for block in blocks:
+            try:
+                obj = json.loads(block)
+                people.extend(obj if isinstance(obj, list) else [obj])
+            except json.JSONDecodeError:
+                pass
+        if not any(isinstance(item, dict) and item.get("@type") == "Person"
+                   and item.get("@id") == base + "/#person" for item in people):
+            errors.append(f"Missing canonical Person schema: {url}")
+    if route in ("/ar/about", "/en/about"):
+        profiles = []
+        for block in blocks:
+            try:
+                obj = json.loads(block)
+                profiles.extend(obj if isinstance(obj, list) else [obj])
+            except json.JSONDecodeError:
+                pass
+        if not any(isinstance(item, dict) and item.get("@type") == "ProfilePage"
+                   and item.get("mainEntity", {}).get("@id") == base + "/#person"
+                   for item in profiles):
+            errors.append(f"Missing linked ProfilePage schema: {url}")
     lang = route.split("/")[1]
     if not re.search(r'<html\s+[^>]*lang="' + lang + r'"', html):
         errors.append(f"Incorrect HTML language: {url}")
