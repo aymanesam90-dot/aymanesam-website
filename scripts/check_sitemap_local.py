@@ -36,6 +36,24 @@ for url in urls:
     lang = route.split("/")[1]
     if not re.search(r'<html\s+[^>]*lang="' + lang + r'"', html):
         errors.append(f"Incorrect HTML language: {url}")
+# Every indexed route should have an equivalent route in the other language.
+url_set = set(urls)
+for url in urls:
+    if url.startswith(base + "/en/"):
+        alternate = base + "/ar/" + url.split("/en/", 1)[1]
+    elif url.startswith(base + "/ar/"):
+        alternate = base + "/en/" + url.split("/ar/", 1)[1]
+    else:
+        continue
+    if alternate not in url_set:
+        errors.append(f"Missing alternate-language sitemap URL for {url}: {alternate}")
+
+robots = root / "robots.txt"
+if not robots.is_file():
+    errors.append("Missing robots.txt")
+elif "Sitemap: " + base + "/sitemap.xml" not in robots.read_text(encoding="utf-8"):
+    errors.append("robots.txt does not reference the canonical sitemap")
+
 for error in errors:
     print("FAIL", error, file=sys.stderr)
 print(f"Checked {len(urls)} sitemap URLs; {len(errors)} errors")
