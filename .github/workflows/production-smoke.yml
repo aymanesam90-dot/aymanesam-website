@@ -1,5 +1,14 @@
 name: Production smoke verification
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/check_sitemap_local.py'
+      - 'scripts/check_production.py'
+      - '.github/workflows/production-smoke.yml'
+      - 'sitemap.xml'
+      - 'en/**'
+      - 'ar/**'
   pull_request:
     paths:
       - 'scripts/check_production.py'
@@ -21,6 +30,7 @@ jobs:
       - name: Validate sitemap and bilingual canonicals offline
         run: python3 scripts/check_sitemap_local.py
   smoke:
+    if: github.event_name != 'push'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
