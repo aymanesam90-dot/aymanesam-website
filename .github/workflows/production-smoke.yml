@@ -3,6 +3,10 @@ on:
   pull_request:
     paths:
       - 'scripts/check_production.py'
+      - 'scripts/check_sitemap_local.py'
+      - 'sitemap.xml'
+      - 'en/**'
+      - 'ar/**'
       - '.github/workflows/production-smoke.yml'
   workflow_dispatch:
   schedule:
@@ -10,6 +14,12 @@ on:
 permissions:
   contents: read
 jobs:
+  local-seo:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate sitemap and bilingual canonicals offline
+        run: python3 scripts/check_sitemap_local.py
   smoke:
     runs-on: ubuntu-latest
     steps:
