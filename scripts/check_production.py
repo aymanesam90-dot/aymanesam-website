@@ -55,6 +55,22 @@ for path, marker, content_type in CASES:
                         expected_url = BASE + "/" + lang + "/" + suffix
                         if alternates.get(lang) != expected_url:
                             raise ValueError(f"Missing {lang} alternate for {loc}")
+                # Check that every published clean URL resolves to HTML.
+                # Keep these checks separate from the local file audit:
+                # successful repository checks do not prove deployment.
+                for page_url in urls:
+                    try:
+                        page_req = Request(page_url, headers={"User-Agent": "AymanSiteReleaseAudit/1.0"})
+                        with urlopen(page_req, timeout=15) as page_response:
+                            page_mime = page_response.headers.get("Content-Type", "")
+                            page_body = page_response.read(350_000).decode("utf-8", "replace")
+                            if page_response.status != 200 or "text/html" not in page_mime:
+                                raise ValueError(f"Unexpected response {page_response.status} ({page_mime})")
+                            if '<link rel="canonical" href="' + page_url + '"' not in page_body:
+                                raise ValueError("Published canonical differs from sitemap URL")
+                        print(f"PASS indexed page {page_url}")
+                    except (HTTPError, URLError, ValueError, TimeoutError) as page_error:
+                        errors.append(f"Indexed page {page_url}: {page_error}")
                 print(f"PASS sitemap entries: {len(urls)}")
             print(f"PASS {path} -> {actual_url} [{status}; {mime}]")
             break
