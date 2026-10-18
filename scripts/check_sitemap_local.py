@@ -64,7 +64,18 @@ for url in urls:
                    and item.get("mainEntity", {}).get("@id") == base + "/#person"
                    for item in profiles):
             errors.append(f"Missing linked ProfilePage schema: {url}")
+    # Reciprocal hreflang signals should match the bilingual sitemap pair.
     lang = route.split("/")[1]
+    other_lang = "ar" if lang == "en" else "en"
+    counterpart = base + "/" + other_lang + "/" + route.split("/", 2)[2]
+    alternates = dict(re.findall(
+        r'<link[^>]*rel="alternate"[^>]*hreflang="([^"]+)"[^>]*href="([^"]+)"',
+        html, flags=re.I
+    ))
+    if alternates.get(lang) != url:
+        errors.append(f"Missing or incorrect self hreflang: {url}")
+    if alternates.get(other_lang) != counterpart:
+        errors.append(f"Missing or incorrect {other_lang} hreflang: {url}")
     if not re.search(r'<html\s+[^>]*lang="' + lang + r'"', html):
         errors.append(f"Incorrect HTML language: {url}")
 # Every indexed route should have an equivalent route in the other language.
