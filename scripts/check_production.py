@@ -41,6 +41,20 @@ for path, marker, content_type in CASES:
                     raise ValueError("Empty sitemap or duplicate URLs")
                 if BASE + "/en/" not in urls or BASE + "/ar/" not in urls:
                     raise ValueError("Missing bilingual home URLs")
+                xhtml = "{http://www.w3.org/1999/xhtml}link"
+                expected = 30
+                if len(urls) != expected:
+                    raise ValueError(f"Expected {expected} sitemap URLs; found {len(urls)}")
+                for entry in root.findall("s:url", ns):
+                    loc = entry.findtext("s:loc", namespaces=ns)
+                    if not loc or not (loc.startswith(BASE + "/en/") or loc.startswith(BASE + "/ar/")):
+                        raise ValueError(f"Unexpected sitemap URL: {loc}")
+                    suffix = loc.split("/", 4)[-1]
+                    alternates = {node.get("hreflang"): node.get("href") for node in entry.findall(xhtml)}
+                    for lang in ("en", "ar"):
+                        expected_url = BASE + "/" + lang + "/" + suffix
+                        if alternates.get(lang) != expected_url:
+                            raise ValueError(f"Missing {lang} alternate for {loc}")
                 print(f"PASS sitemap entries: {len(urls)}")
             print(f"PASS {path} -> {actual_url} [{status}; {mime}]")
             break
