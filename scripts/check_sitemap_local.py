@@ -37,13 +37,13 @@ for url in urls:
     # Detect missing and duplicated search-result titles/descriptions.
     titles = re.findall(r"<title>(.*?)</title>", html, flags=re.I | re.S)
     descriptions = re.findall(
-        r'<meta\\s+name="description"\\s+content="([^"]+)"', html, flags=re.I
+        r'<meta\s+name="description"\s+content="([^"]+)"', html, flags=re.I
     )
     if len(titles) != 1 or not titles[0].strip():
         errors.append(f"Expected exactly one nonempty page title: {url}")
     if len(descriptions) != 1 or not descriptions[0].strip():
         errors.append(f"Expected exactly one nonempty meta description: {url}")
-    if not re.search(r"<h1\\b[^>]*>.*?</h1>", html, flags=re.I | re.S):
+    if not re.search(r"<h1\b[^>]*>.*?</h1>", html, flags=re.I | re.S):
         errors.append(f"Missing main H1 heading: {url}")
     # Validate every embedded JSON-LD block, not just page metadata.
     blocks = re.findall(r'<script[^>]*type="application/ld[+]json"[^>]*>(.*?)</script>', html, flags=re.I | re.S)
