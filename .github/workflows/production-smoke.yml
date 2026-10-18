@@ -30,7 +30,6 @@ jobs:
       - name: Validate sitemap and bilingual canonicals offline
         run: python3 scripts/check_sitemap_local.py
   smoke:
-    if: github.event_name != 'push'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
