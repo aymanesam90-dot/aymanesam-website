@@ -14,8 +14,8 @@
  if(prev)prev.onclick=()=>shift(-1);if(next)next.onclick=()=>shift(1);
  if(dots)dots.innerHTML='';
  viewport.style.scrollBehavior='auto';track.style.scrollBehavior='auto';
- section.addEventListener('mouseenter',()=>{paused=true});
- section.addEventListener('mouseleave',()=>{paused=false;last=0});
+
+
  section.addEventListener('focusin',()=>{paused=true});
  section.addEventListener('focusout',()=>{paused=section.contains(document.activeElement);last=0});
  document.addEventListener('visibilitychange',()=>{last=0});
