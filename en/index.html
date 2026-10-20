@@ -16,8 +16,8 @@
  viewport.style.scrollBehavior='auto';track.style.scrollBehavior='auto';
 
 
- section.addEventListener('focusin',()=>{paused=true});
- section.addEventListener('focusout',()=>{paused=section.contains(document.activeElement);last=0});
+ // Keep the carousel moving when controls receive focus or the pointer hovers.
+ // Respect the user's reduced-motion preference in the animation loop.
  document.addEventListener('visibilitychange',()=>{last=0});
  window.addEventListener('resize',()=>{position=0;viewport.scrollLeft=0;last=0});
  raf=requestAnimationFrame(loop);
