@@ -234,3 +234,9 @@ html[lang="ar"] .client-card b,html[lang="ar"] .company b,html[lang="ar"] .conta
 .contact-card{min-width:0}
 .contact-card a,.contact-card strong{overflow-wrap:anywhere}
 @media(max-width:900px){.contact-grid{grid-template-columns:minmax(0,1fr)}}
+
+/* Original company logos; keep text as accessible fallback. */
+.client-section .company-logo{display:block;max-width:180px;width:auto;height:78px;object-fit:contain;align-self:center;margin:0 auto 14px}
+.client-section .company-logo[hidden]{display:none!important}
+.client-section .client-card a:focus-visible{outline:3px solid #B58A52;outline-offset:5px;border-radius:8px}
+@media(max-width:700px){.client-section .company-logo{max-width:150px;height:62px;margin-bottom:10px}}
