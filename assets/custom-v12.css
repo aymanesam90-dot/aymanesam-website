@@ -247,3 +247,13 @@ html[lang="ar"] .client-card b,html[lang="ar"] .company b,html[lang="ar"] .conta
 .client-section .client-card b{display:block!important;line-height:1.45!important;margin:0!important}
 .client-section .client-card span{display:block!important;line-height:1.45!important;margin-top:5px!important}
 .client-section .client-card .company-logo{margin-top:0!important;margin-bottom:9px!important}
+
+/* Experience achievements: override global !important heading typography and use a balanced six-card layout. */
+.achievement-section .achievement-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.achievement-section .achievement-card{min-width:0;padding:20px}
+.achievement-section .achievement-card h3,
+html[lang="ar"] .achievement-section .achievement-card h3{font-size:19px!important;line-height:1.45!important;letter-spacing:normal!important;font-weight:700!important;margin:12px 0 10px!important;overflow-wrap:break-word}
+.achievement-section .achievement-card strong{font-size:clamp(23px,2.1vw,29px)!important;line-height:1.35!important;overflow-wrap:anywhere}
+.achievement-section .achievement-card p{font-size:14px;line-height:1.75}
+@media(max-width:900px){.achievement-section .achievement-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.achievement-section .achievement-grid{grid-template-columns:minmax(0,1fr);gap:12px}.achievement-section .achievement-card{padding:18px}.achievement-section .achievement-card h3,html[lang="ar"] .achievement-section .achievement-card h3{font-size:18px!important;line-height:1.5!important}.achievement-section .achievement-card strong{font-size:24px!important}}
