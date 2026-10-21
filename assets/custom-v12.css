@@ -234,3 +234,16 @@ html[lang="ar"] .client-card b,html[lang="ar"] .company b,html[lang="ar"] .conta
 .contact-card{min-width:0}
 .contact-card a,.contact-card strong{overflow-wrap:anywhere}
 @media(max-width:900px){.contact-grid{grid-template-columns:minmax(0,1fr)}}
+
+/* Original company logos; keep text as accessible fallback. */
+.client-section .company-logo{display:block;max-width:180px;width:auto;height:78px;object-fit:contain;align-self:center;margin:0 auto 14px}
+.client-section .company-logo[hidden]{display:none!important}
+.client-section .client-card a:focus-visible{outline:3px solid #B58A52;outline-offset:5px;border-radius:8px}
+@media(max-width:700px){.client-section .company-logo{max-width:150px;height:62px;margin-bottom:10px}}
+
+/* Company identity card: logo, organization name, and business sector. */
+.client-section .client-card{text-align:center!important;align-items:center!important;gap:6px!important}
+.client-section .client-card>a{width:100%;align-items:center;text-align:center}
+.client-section .client-card b{display:block!important;line-height:1.45!important;margin:0!important}
+.client-section .client-card span{display:block!important;line-height:1.45!important;margin-top:5px!important}
+.client-section .client-card .company-logo{margin-top:0!important;margin-bottom:9px!important}
