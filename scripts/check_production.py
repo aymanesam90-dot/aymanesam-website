@@ -3,6 +3,8 @@
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError, URLError
 import sys
+from pathlib import Path
+import re
 import time
 import xml.etree.ElementTree as ET
 
@@ -30,6 +32,22 @@ for path, marker, content_type in CASES:
             if status != 200 or marker not in body or content_type not in mime:
                 raise ValueError(f"status={status} mime={mime!r} marker_found={marker in body}")
             if path in ("/en/", "/ar/"):
+                # Detect skipped or stale Cloudflare Pages deployments.
+                language = path.strip("/")
+                local_html = (Path(__file__).resolve().parent.parent / language / "index.html").read_text(encoding="utf-8")
+                for pattern, label in (
+                    (r'<div class="float-card float-one"><strong>(.*?)</strong>', "hero metric"),
+                    (r'<div class="wrap stats"><div class="stat"><b>(.*?)</b>', "stats metric"),
+                ):
+                    expected_match = re.search(pattern, local_html, re.S)
+                    actual_match = re.search(pattern, body, re.S)
+                    if not expected_match or not actual_match:
+                        raise ValueError(f"Missing {label} on {language} homepage")
+                    if expected_match.group(1) != actual_match.group(1):
+                        raise ValueError(
+                            f"Stale production {language} {label}: "
+                            f"expected {expected_match.group(1)!r}, got {actual_match.group(1)!r}"
+                        )
                 canonical = BASE + path
                 if 'rel="canonical" href="' + canonical + '"' not in body:
                     raise ValueError("Incorrect homepage canonical: " + canonical)
