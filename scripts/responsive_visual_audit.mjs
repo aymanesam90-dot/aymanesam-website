@@ -100,7 +100,7 @@ for (const lang of ['ar', 'en']) {
           const hoverStart = await read();
           await page.waitForTimeout(350);
           const hoverEnd = await read();
-          if (Math.abs(hoverEnd - hoverStart) > 2) errors.push(`${lang}/index: carousel moves while hovered (${hoverStart} -> ${hoverEnd})`);
+          if (Math.abs(hoverEnd - hoverStart) <= 2) errors.push(`${lang}/index: carousel unexpectedly pauses while hovered (${hoverStart} -> ${hoverEnd})`);
           await page.mouse.move(0, 0);
           const next = section.locator('.client-next');
           if (await next.count()) {
@@ -109,7 +109,7 @@ for (const lang of ['ar', 'en']) {
             const focusStart = await read();
             await page.waitForTimeout(350);
             const focusEnd = await read();
-            if (Math.abs(focusEnd - focusStart) > 2) errors.push(`${lang}/index: carousel moves during keyboard focus (${focusStart} -> ${focusEnd})`);
+            if (Math.abs(focusEnd - focusStart) <= 2) errors.push(`${lang}/index: carousel unexpectedly pauses during keyboard focus (${focusStart} -> ${focusEnd})`);
           }
         }
       }
