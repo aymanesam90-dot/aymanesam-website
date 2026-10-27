@@ -1,6 +1,14 @@
 name: Responsive visual audit
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/responsive_visual_audit.mjs'
+      - '.github/workflows/responsive-visual-audit.yml'
+      - 'assets/*.css'
+      - 'ar/**'
+      - 'en/**'
   pull_request:
     paths:
       - 'scripts/responsive_visual_audit.mjs'
@@ -13,7 +21,7 @@ on:
 jobs:
   responsive:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -27,7 +35,7 @@ jobs:
         run: |
           python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/site.log 2>&1 &
           sleep 2
-      - name: Capture 40 screenshots and detect horizontal overflow
+      - name: Capture bilingual desktop/mobile screenshots and detect layout issues
         run: node scripts/responsive_visual_audit.mjs
       - uses: actions/upload-artifact@v4
         if: always()
@@ -35,3 +43,4 @@ jobs:
           name: bilingual-responsive-screenshots
           path: responsive-results/
           if-no-files-found: ignore
+          retention-days: 14
