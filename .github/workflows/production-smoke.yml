@@ -9,6 +9,7 @@ on:
       - 'sitemap.xml'
       - 'en/**'
       - 'ar/**'
+      - 'content/home-*.json'
   pull_request:
     paths:
       - 'scripts/check_production.py'
@@ -16,6 +17,7 @@ on:
       - 'sitemap.xml'
       - 'en/**'
       - 'ar/**'
+      - 'content/home-*.json'
       - '.github/workflows/production-smoke.yml'
   workflow_dispatch:
   schedule:
@@ -31,7 +33,13 @@ jobs:
         run: python3 scripts/check_sitemap_local.py
   smoke:
     runs-on: ubuntu-latest
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
       - name: Verify live bilingual pages and SEO endpoints
         run: python3 scripts/check_production.py
+      - name: Summarize production verification
+        if: always()
+        run: |
+          echo '## Production smoke verification' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Checks live Arabic/English pages, approved homepage metrics, canonicals and sitemap. A failed step means production needs investigation.' >> "$GITHUB_STEP_SUMMARY"
