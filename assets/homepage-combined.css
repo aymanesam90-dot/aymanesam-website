@@ -267,3 +267,6 @@ html[lang="ar"] .client-card b,html[lang="ar"] .company b,html[lang="ar"] .conta
 .client-section .client-card>a{display:flex!important;flex-direction:column!important}
 .client-section .client-card .company-logo{align-self:center!important;margin-left:auto!important;margin-right:auto!important}
 .client-section .client-card b,.client-section .client-card span{width:100%!important;text-align:center!important;align-self:center!important;direction:inherit!important}
+
+/* Homepage selected outcomes: responsive, accessible, and consistent with the existing visual system. */
+.results-section{padding:42px 0 58px}.results-section h3{margin:10px 0 24px}.results-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}.result-card{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:26px 22px;box-shadow:0 10px 32px rgba(65,52,38,.07);display:flex;flex-direction:column;gap:8px;min-width:0}.result-card strong{font-size:clamp(24px,3vw,35px);line-height:1.3;color:var(--accent-dark);font-weight:800;font-variant-numeric:tabular-nums}.result-card span{font-size:15px;line-height:1.65;color:var(--text)}.results-section .cta{margin-top:24px}@media(max-width:700px){.results-section{padding:28px 0 40px}.results-grid{grid-template-columns:1fr;gap:12px}.result-card{padding:19px 20px}.result-card strong{font-size:27px}}
