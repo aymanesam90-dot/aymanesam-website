@@ -96,8 +96,10 @@ jobs:
                               });
                           }));
                       }""")
-                      failed = page.locator("img:not([loading=lazy])").evaluate_all("(imgs) => imgs.filter(i => !i.complete || i.naturalWidth === 0).map(i => i.currentSrc || i.src)")
-                      assert not failed, f"Images failed: {lang} {device}: {failed}"
+                      image_urls = page.locator("img").evaluate_all("(imgs) => [...new Set(imgs.map(i => i.currentSrc || i.src).filter(Boolean))]")
+                      for image_url in image_urls:
+                          image_response = page.request.get(image_url)
+                          assert image_response.ok and image_response.headers.get("content-type", "").startswith("image/"), f"Image resource unavailable: {lang} {device}: {image_url} ({image_response.status})"
                       page.screenshot(path=f"screenshots/{lang}-{device}.png", full_page=True)
                       page.close()
               browser.close()
