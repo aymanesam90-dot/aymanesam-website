@@ -1,0 +1,15 @@
+name: SEO redirect audit
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '30 8 * * 1'
+permissions:
+  contents: read
+jobs:
+  redirect-audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check live 301 status and exact Location headers
+        run: python3 scripts/check_redirects.py
