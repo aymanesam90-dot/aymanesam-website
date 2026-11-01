@@ -1,5 +1,12 @@
 name: SEO redirect audit
 on:
+  push:
+    branches: [main]
+    paths:
+      - '_redirects'
+      - 'index.html'
+      - 'scripts/check_redirects.py'
+      - '.github/workflows/seo-redirect-audit.yml'
   workflow_dispatch:
   schedule:
     - cron: '30 8 * * 1'
