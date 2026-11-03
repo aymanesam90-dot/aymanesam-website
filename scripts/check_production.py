@@ -51,13 +51,13 @@ for path, marker, content_type in CASES:
                 # Confirm all three published outcomes match the current release,
                 # not merely that the homepage and older hero metrics load.
                 cards_pattern = re.compile(
-                    r'<article\\s+class="result-card"[^>]*>\\s*<strong>(.*?)</strong>\\s*<span>(.*?)</span>\\s*</article>',
+                    r'<article\s+class="result-card"[^>]*>\s*<strong>(.*?)</strong>\s*<span>(.*?)</span>\s*</article>',
                     re.S,
                 )
                 def normalized_cards(html):
                     return [
-                        (re.sub(r"\\s+", " ", re.sub(r"<[^>]+>", "", metric)).strip(),
-                         re.sub(r"\\s+", " ", re.sub(r"<[^>]+>", "", description)).strip())
+                        (re.sub(r"\s+", " ", re.sub(r"<[^>]+>", "", metric)).strip(),
+                         re.sub(r"\s+", " ", re.sub(r"<[^>]+>", "", description)).strip())
                         for metric, description in cards_pattern.findall(html)
                     ]
                 expected_cards = normalized_cards(local_html)
