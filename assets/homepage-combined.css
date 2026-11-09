@@ -122,9 +122,9 @@ html[lang="ar"] .client-card b,html[lang="ar"] .company b,html[lang="ar"] .conta
 @media(max-width:850px){
   .nav{min-height:68px!important;padding:10px 16px!important}
   .brand{font-size:13px!important}
-  .menu-toggle{width:42px!important;height:42px!important}
+  .menu-toggle{width:44px!important;height:44px!important}
   .links{left:10px!important;right:10px!important;border-radius:14px!important;padding:9px!important}
-  .links a{font-size:13px!important;padding:11px 13px!important;min-height:42px!important}
+  .links a{font-size:13px!important;padding:11px 13px!important;min-height:44px!important}
   .hero{grid-template-columns:1fr!important;padding-top:38px!important;padding-bottom:44px!important;gap:30px!important}
   .hero-copy{max-width:none!important}
   .hero h1{font-size:clamp(46px,12vw,64px)!important}
