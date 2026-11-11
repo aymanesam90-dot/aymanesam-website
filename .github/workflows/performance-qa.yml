@@ -35,7 +35,7 @@ jobs:
               html = Path(lang, "index.html").read_text()
               assert f'<html lang="{lang}"' in html, f"Incorrect language: {lang}"
               assert f'href="https://aymanesam.com/{lang}/"' in html, f"Canonical missing: {lang}"
-              assert 'homepage-combined.css?v=3' in html, f"Combined CSS missing: {lang}"
+              assert 'homepage-combined.css?v=5' in html, f"Combined CSS missing: {lang}"
               assert 'custom-v12-base.css?v=1' not in html and 'custom-v12-optimized.css?v=1' not in html, f"Redundant homepage CSS: {lang}"
               assert 'fonts.gstatic.com' in html and 'fonts.googleapis.com' in html, f"Fonts missing: {lang}"
               assert 'as="style"' in html and '<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/' in html, f"Async font loading or fallback missing: {lang}"
