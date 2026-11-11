@@ -26,7 +26,12 @@ for url in urls:
     if not (route.startswith("/en/") or route.startswith("/ar/")):
         errors.append(f"Unexpected language route: {url}")
         continue
-    file = root / route.lstrip("/") / "index.html" if route.endswith("/") else root / (route.lstrip("/") + ".html")
+    if route.endswith("/"):
+        file = root / route.lstrip("/") / "index.html"
+    elif route.endswith(".html"):
+        file = root / route.lstrip("/")
+    else:
+        file = root / (route.lstrip("/") + ".html")
     if not file.is_file():
         errors.append(f"Missing file for {url}: {file.relative_to(root)}")
         continue
