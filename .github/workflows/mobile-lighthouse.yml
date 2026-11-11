@@ -111,6 +111,31 @@ jobs:
               'FCP', data.audits['first-contentful-paint']?.displayValue);
           }
           JS
+      - name: Summarize optimization opportunities from production audits
+        if: always()
+        shell: bash
+        run: |
+          node - <<'JS'
+          const fs = require('fs');
+          const file = process.env.GITHUB_STEP_SUMMARY;
+          const lines = ['## Production optimization opportunities', '', '| Language | Render-blocking savings | Responsive-image savings | Modern-format savings |', '|---|---:|---:|---:|'];
+          for (const lang of ['ar', 'en']) {
+            const path = 'production-results/' + lang + '.report.json';
+            if (!fs.existsSync(path)) {
+              lines.push('| ' + lang + ' | Not measured | Not measured | Not measured |');
+              continue;
+            }
+            const audits = JSON.parse(fs.readFileSync(path)).audits;
+            const val = id => audits[id]?.displayValue || 'None reported';
+            lines.push('| ' + lang + ' | ' + val('render-blocking-resources') + ' | ' + val('uses-responsive-images') + ' | ' + val('modern-image-formats') + ' |');
+            const images = audits['uses-responsive-images']?.details?.items || [];
+            for (const item of images.slice(0, 3)) {
+              const url = item.url || '';
+              if (url) lines.push('- ' + lang.toUpperCase() + ' oversized image: ' + url + ' (' + Math.round((item.wastedBytes || 0) / 1024) + ' KiB potential saving)');
+            }
+          }
+          fs.appendFileSync(file, lines.join('\n') + '\n');
+          JS
       - name: Publish bilingual Lighthouse summary
         if: always()
         shell: bash
