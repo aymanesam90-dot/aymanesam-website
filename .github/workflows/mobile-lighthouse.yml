@@ -1,6 +1,13 @@
 name: Mobile Lighthouse performance audit
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'en/index.html'
+      - 'ar/index.html'
+      - 'assets/homepage-combined.css'
+      - '.github/workflows/mobile-lighthouse.yml'
   pull_request:
     paths:
       - 'en/index.html'
