@@ -60,9 +60,13 @@ for path, marker, content_type in CASES:
                 if BASE + "/en/" not in urls or BASE + "/ar/" not in urls:
                     raise ValueError("Missing bilingual home URLs")
                 xhtml = "{http://www.w3.org/1999/xhtml}link"
-                expected = 30
-                if len(urls) != expected:
-                    raise ValueError(f"Expected {expected} sitemap URLs; found {len(urls)}")
+                local_sitemap = Path(__file__).resolve().parent.parent / "sitemap.xml"
+                local_root = ET.parse(local_sitemap).getroot()
+                expected_urls = [n.text for n in local_root.findall("s:url/s:loc", ns)]
+                if set(urls) != set(expected_urls) or len(urls) != len(expected_urls):
+                    missing = sorted(set(expected_urls) - set(urls))
+                    extra = sorted(set(urls) - set(expected_urls))
+                    raise ValueError(f"Production sitemap differs from repository: missing={missing}, extra={extra}")
                 for entry in root.findall("s:url", ns):
                     loc = entry.findtext("s:loc", namespaces=ns)
                     if not loc or not (loc.startswith(BASE + "/en/") or loc.startswith(BASE + "/ar/")):
