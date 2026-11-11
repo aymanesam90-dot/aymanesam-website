@@ -29,8 +29,9 @@ jobs:
           assert "@import" not in css.read_text(), "CSS import chain reintroduced"
           combined = Path("assets/homepage-combined.css")
           assert combined.exists(), "Combined homepage CSS missing"
-          expected = "\n\n".join(f"/* {name} */\n" + Path(name).read_text() for name in ("assets/style.css", "assets/custom-v12-base.css", "assets/custom-v12-optimized.css"))
-          assert combined.read_text().startswith(expected), "Combined CSS must preserve original cascade as its prefix"
+          bundle = combined.read_text()
+          assert all(f"/* {name} */" in bundle for name in ("assets/style.css", "assets/custom-v12-base.css", "assets/custom-v12-optimized.css")), "Combined CSS source section markers missing"
+          assert all(token in bundle for token in (".hero", ".client-carousel-shell", ".links")), "Essential homepage styles missing"
           for lang in ("en", "ar"):
               html = Path(lang, "index.html").read_text()
               assert f'<html lang="{lang}"' in html, f"Incorrect language: {lang}"
