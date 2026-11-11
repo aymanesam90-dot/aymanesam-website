@@ -14,6 +14,8 @@ jobs:
           python-version: '3.12'
       - name: Validate links and page anchors
         run: python scripts/check_internal_links.py
+      - name: Audit site integrity (links, assets, fragments, sitemap)
+        run: python scripts/check_site_integrity.py
       - name: Validate XML sitemap
         run: python scripts/check_sitemap.py
       - name: Validate bilingual accessibility basics
