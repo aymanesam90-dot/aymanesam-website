@@ -48,6 +48,10 @@ for path, marker, content_type in CASES:
                             f"Stale production {language} {label}: "
                             f"expected {expected_match.group(1)!r}, got {actual_match.group(1)!r}"
                         )
+                # Verify the current-oversight KPI on the deployed page, not only in source.
+                expected_count = "4 Companies" if language == "en" else "4 شركات"
+                if not re.search(r"<b>\\s*" + re.escape(expected_count) + r"\\s*</b>", body):
+                    raise ValueError(f"Live {language} homepage does not show {expected_count!r}")
                 canonical = BASE + path
                 if 'rel="canonical" href="' + canonical + '"' not in body:
                     raise ValueError("Incorrect homepage canonical: " + canonical)
