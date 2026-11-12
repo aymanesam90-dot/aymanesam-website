@@ -18,5 +18,7 @@ jobs:
         run: python scripts/check_site_integrity.py
       - name: Validate XML sitemap
         run: python scripts/check_sitemap.py
+      - name: Validate bilingual homepage Person structured data
+        run: python scripts/check_homepage_schema.py
       - name: Validate bilingual accessibility basics
         run: python scripts/check_page_accessibility.py
