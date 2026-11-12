@@ -3,6 +3,7 @@
 from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import urlsplit
+from xml.etree import ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE = "https://aymanesam.com"
@@ -25,6 +26,8 @@ class MetaParser(HTMLParser):
     def handle_data(self, data):
         if self.in_title: self.title += data
 
+sitemap = ET.parse(ROOT / "sitemap.xml")
+sitemap_urls = {node.text.strip() for node in sitemap.iter() if node.tag.endswith("}loc") and node.text}
 errors = []
 checked = 0
 for lang in ("en", "ar"):
@@ -36,8 +39,10 @@ for lang in ("en", "ar"):
             expected = f"{BASE}/{lang}/"
         else:
             expected = f"{BASE}/{rel}"
-            if expected.endswith(".html"): expected = expected[:-5]
+            if expected.endswith(".html") and expected[:-5] in sitemap_urls: expected = expected[:-5]
         canonicals = [x.get("href") for x in parser.links if x.get("rel") == "canonical"]
+        if expected not in sitemap_urls:
+            errors.append(f"{rel}: expected canonical absent from sitemap: {expected}")
         if len(canonicals) != 1 or canonicals[0] != expected:
             errors.append(f"{rel}: canonical {canonicals} expected {expected}")
         if parser.html.get("lang") != lang:
