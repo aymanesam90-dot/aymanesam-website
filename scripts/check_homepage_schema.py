@@ -35,4 +35,7 @@ for lang in ("en", "ar"):
     assert "SAR 700M+" not in html and "+700" not in html, f"{lang}: outdated KPI"
     expected_stat = "<b>4 Companies</b><span>Current group oversight" if lang == "en" else "<b>4 شركات</b><span>إشراف مالي حالي"
     assert expected_stat in html, f"{lang}: current group company count must be four"
+    assert "500" in html, f"{lang}: annual sales oversight KPI missing"
+    assert "6 Companies" not in html and "6 شركات" not in html, f"{lang}: outdated current company count"
+    assert not re.search(r"(?:\\+700|700M)", html), f"{lang}: outdated annual sales KPI"
     print(f"{lang.upper()}: Person schema, alternate names, canonical, hreflang, company count and KPI valid")
