@@ -28,7 +28,12 @@ class MetaParser(HTMLParser):
 
 sitemap = ET.parse(ROOT / "sitemap.xml")
 sitemap_urls = {node.text.strip() for node in sitemap.iter() if node.tag.endswith("}loc") and node.text}
+robots_txt = (ROOT / "robots.txt").read_text(encoding="utf-8")
 errors = []
+if "Sitemap: https://aymanesam.com/sitemap.xml" not in robots_txt:
+    errors.append("robots.txt: missing canonical sitemap declaration")
+if "Disallow: /" in robots_txt.splitlines():
+    errors.append("robots.txt: site-wide crawl disallow detected")
 checked = 0
 for lang in ("en", "ar"):
     for page in sorted((ROOT / lang).rglob("*.html")):
@@ -49,6 +54,9 @@ for lang in ("en", "ar"):
             errors.append(f"{rel}: wrong html lang")
         if not parser.title.strip():
             errors.append(f"{rel}: missing title")
+        robots = [x.get("content", "").lower() for x in parser.meta if x.get("name", "").lower() == "robots"]
+        if any("noindex" in value or "none" in value for value in robots):
+            errors.append(f"{rel}: public page marked noindex")
         descriptions = [x.get("content", "") for x in parser.meta if x.get("name") == "description"]
         if len(descriptions) != 1 or not descriptions[0].strip():
             errors.append(f"{rel}: missing/duplicate meta description")
