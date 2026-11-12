@@ -48,6 +48,28 @@ for path, marker, content_type in CASES:
                             f"Stale production {language} {label}: "
                             f"expected {expected_match.group(1)!r}, got {actual_match.group(1)!r}"
                         )
+                # Confirm all three published outcomes match the current release,
+                # not merely that the homepage and older hero metrics load.
+                cards_pattern = re.compile(
+                    r'<article\s+class="result-card"[^>]*>\s*<strong>(.*?)</strong>\s*<span>(.*?)</span>\s*</article>',
+                    re.S,
+                )
+                def normalized_cards(html):
+                    return [
+                        (re.sub(r"\s+", " ", re.sub(r"<[^>]+>", "", metric)).strip(),
+                         re.sub(r"\s+", " ", re.sub(r"<[^>]+>", "", description)).strip())
+                        for metric, description in cards_pattern.findall(html)
+                    ]
+                expected_cards = normalized_cards(local_html)
+                published_cards = normalized_cards(body)
+                if len(expected_cards) != 3:
+                    raise ValueError(f"Expected three local {language} result cards; got {len(expected_cards)}")
+                if published_cards != expected_cards:
+                    raise ValueError(
+                        f"Stale or missing {language} result cards: "
+                        f"expected {expected_cards!r}, got {published_cards!r}"
+                    )
+                print(f"PASS {language} published result cards: {len(published_cards)}")
                 canonical = BASE + path
                 if 'rel="canonical" href="' + canonical + '"' not in body:
                     raise ValueError("Incorrect homepage canonical: " + canonical)
