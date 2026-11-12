@@ -39,6 +39,9 @@ jobs:
               assert 'homepage-combined.css?v=5' in html, f"Combined CSS missing: {lang}"
               assert 'custom-v12-base.css?v=1' not in html and 'custom-v12-optimized.css?v=1' not in html, f"Redundant homepage CSS: {lang}"
               assert 'fonts.gstatic.com' in html and 'fonts.googleapis.com' in html, f"Fonts missing: {lang}"
+              if lang == 'en':
+                  assert 'Alexandria:wght@' not in html, 'English homepage must not request the Arabic font family'
+                  assert 'family=Inter:wght@' in html, 'English homepage Inter font request missing'
               assert 'as="style"' in html and '<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/' in html, f"Async font loading or fallback missing: {lang}"
               assert 'fetchpriority="high"' in html, f"Hero priority missing: {lang}"
               assert 'ayman-hero-mobile.webp' in html, f"Mobile hero missing: {lang}"
