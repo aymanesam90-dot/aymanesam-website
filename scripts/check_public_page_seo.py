@@ -57,6 +57,13 @@ for lang in ("en", "ar"):
         robots = [x.get("content", "").lower() for x in parser.meta if x.get("name", "").lower() == "robots"]
         if any("noindex" in value or "none" in value for value in robots):
             errors.append(f"{rel}: public page marked noindex")
+        og = {x.get("property"): x.get("content", "") for x in parser.meta if x.get("property", "").startswith("og:")}
+        if og.get("og:url") and og["og:url"] != expected:
+            errors.append(f"{rel}: og:url differs from canonical")
+        if og.get("og:image"):
+            image = urlsplit(og["og:image"])
+            if image.scheme != "https" or image.netloc != "aymanesam.com":
+                errors.append(f"{rel}: invalid og:image URL")
         descriptions = [x.get("content", "") for x in parser.meta if x.get("name") == "description"]
         if len(descriptions) != 1 or not descriptions[0].strip():
             errors.append(f"{rel}: missing/duplicate meta description")
