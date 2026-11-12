@@ -58,6 +58,9 @@ for lang in ("en", "ar"):
         if any("noindex" in value or "none" in value for value in robots):
             errors.append(f"{rel}: public page marked noindex")
         og = {x.get("property"): x.get("content", "") for x in parser.meta if x.get("property", "").startswith("og:")}
+        for required in ("og:title", "og:description", "og:image", "og:url"):
+            if not og.get(required):
+                errors.append(f"{rel}: missing {required} social preview metadata")
         if og.get("og:url") and og["og:url"] != expected:
             errors.append(f"{rel}: og:url differs from canonical")
         if og.get("og:image"):
