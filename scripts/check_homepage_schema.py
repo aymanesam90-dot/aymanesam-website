@@ -10,7 +10,7 @@ EXPECTED_NAMES = {"Ayman Esam", "Ayman Essam", "Ayman Isam", "Ayman Issam", "Ø£Ù
 
 for lang in ("en", "ar"):
     html = Path(lang, "index.html").read_text(encoding="utf-8")
-    blocks = re.findall(r'<script\\s+type="application/ld\\+json"[^>]*>(.*?)</script>', html, re.S)
+    blocks = re.findall(r'<script\s+type="application/ld\+json"[^>]*>(.*?)</script>', html, re.S)
     assert blocks, f"{lang}: missing JSON-LD"
     persons = []
     for block in blocks:
