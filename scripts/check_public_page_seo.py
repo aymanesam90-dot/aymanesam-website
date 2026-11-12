@@ -2,7 +2,7 @@
 """Check canonical, title, description and language on public bilingual HTML pages."""
 from html.parser import HTMLParser
 from pathlib import Path
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit, unquote
 from xml.etree import ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -67,6 +67,8 @@ for lang in ("en", "ar"):
             image = urlsplit(og["og:image"])
             if image.scheme != "https" or image.netloc != "aymanesam.com":
                 errors.append(f"{rel}: invalid og:image URL")
+            elif not image.path or not (ROOT / unquote(image.path).lstrip("/")).is_file():
+                errors.append(f"{rel}: missing social preview image file {image.path}")
         descriptions = [x.get("content", "") for x in parser.meta if x.get("name") == "description"]
         if len(descriptions) != 1 or not descriptions[0].strip():
             errors.append(f"{rel}: missing/duplicate meta description")
