@@ -50,7 +50,7 @@ for path, marker, content_type in CASES:
                         )
                 # Verify the current-oversight KPI on the deployed page, not only in source.
                 expected_count = "4 Companies" if language == "en" else "4 شركات"
-                if not re.search(r"<b>\\s*" + re.escape(expected_count) + r"\\s*</b>", body):
+                if not re.search(r"<b>\s*" + re.escape(expected_count) + r"\s*</b>", body):
                     raise ValueError(f"Live {language} homepage does not show {expected_count!r}")
                 canonical = BASE + path
                 if 'rel="canonical" href="' + canonical + '"' not in body:
