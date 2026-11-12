@@ -33,4 +33,6 @@ for lang in ("en", "ar"):
     for other in ("en", "ar"):
         assert f'hreflang="{other}" href="{DOMAIN}/{other}/"' in html, f"{lang}: missing {other} alternate"
     assert "SAR 700M+" not in html and "+700" not in html, f"{lang}: outdated KPI"
-    print(f"{lang.upper()}: Person schema, alternate names, canonical, hreflang and KPI valid")
+    expected_stat = "<b>4 Companies</b><span>Current group oversight" if lang == "en" else "<b>4 شركات</b><span>إشراف مالي حالي"
+    assert expected_stat in html, f"{lang}: current group company count must be four"
+    print(f"{lang.upper()}: Person schema, alternate names, canonical, hreflang, company count and KPI valid")
