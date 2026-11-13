@@ -52,6 +52,14 @@ for path, marker, content_type in CASES:
                 expected_count = "4 Companies" if language == "en" else "4 شركات"
                 if not re.search(r"<b>\s*" + re.escape(expected_count) + r"\s*</b>", body):
                     raise ValueError(f"Live {language} homepage does not show {expected_count!r}")
+                # Ensure the deployed social preview image is actually reachable.
+                if language == "en":
+                    preview_url = BASE + "/assets/ayman-hero.jpg"
+                    with urlopen(Request(preview_url, headers={"User-Agent": "AymanSiteReleaseAudit/1.0"}), timeout=20) as preview:
+                        preview_mime = preview.headers.get("Content-Type", "")
+                        if preview.status != 200 or not preview_mime.startswith("image/") or not preview.read(32):
+                            raise ValueError(f"Live social preview image unavailable: {preview_url} ({preview_mime})")
+                    print(f"PASS social preview image {preview_url}")
                 canonical = BASE + path
                 if 'rel="canonical" href="' + canonical + '"' not in body:
                     raise ValueError("Incorrect homepage canonical: " + canonical)
