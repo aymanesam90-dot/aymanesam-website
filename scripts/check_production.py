@@ -98,6 +98,10 @@ for path, marker, content_type in CASES:
                         with urlopen(page_req, timeout=15) as page_response:
                             page_mime = page_response.headers.get("Content-Type", "")
                             page_body = page_response.read(350_000).decode("utf-8", "replace")
+                            # Indexing can be blocked by HTTP headers even when HTML metadata is valid.
+                            x_robots = page_response.headers.get("X-Robots-Tag", "").lower()
+                            if re.search(r"(?<![a-z])(?:noindex|none)(?![a-z])", x_robots):
+                                raise ValueError(f"Indexing blocked by X-Robots-Tag: {x_robots}")
                             if page_response.status != 200 or "text/html" not in page_mime:
                                 raise ValueError(f"Unexpected response {page_response.status} ({page_mime})")
                             if '<link rel="canonical" href="' + page_url + '"' not in page_body:
