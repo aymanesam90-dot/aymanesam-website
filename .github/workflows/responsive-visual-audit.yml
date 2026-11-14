@@ -6,18 +6,16 @@ on:
     paths:
       - 'scripts/responsive_visual_audit.mjs'
       - '.github/workflows/responsive-visual-audit.yml'
-      - 'assets/*.css'
+      - 'assets/**'
       - 'ar/**'
       - 'en/**'
   pull_request:
     paths:
       - 'scripts/responsive_visual_audit.mjs'
       - '.github/workflows/responsive-visual-audit.yml'
-      - 'assets/custom-v12.css'
-      - 'assets/style.css'
-      - 'assets/homepage-combined.css'
-      - 'ar/*.html'
-      - 'en/*.html'
+      - 'assets/**'
+      - 'ar/**'
+      - 'en/**'
 jobs:
   responsive:
     runs-on: ubuntu-24.04
