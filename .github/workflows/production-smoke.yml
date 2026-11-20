@@ -5,6 +5,7 @@ on:
   pull_request:
     paths:
       - 'scripts/check_production.py'
+      - 'scripts/check_article_redirects.py'
       - 'scripts/check_public_page_seo.py'
       - 'scripts/check_homepage_schema.py'
       - 'scripts/check_sitemap_local.py'
@@ -34,6 +35,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Verify live bilingual pages and SEO endpoints
         run: python3 scripts/check_production.py
+      - name: Diagnose four Search Console article redirect chains
+        run: python3 scripts/check_article_redirects.py
       - name: Summarize production verification
         if: always()
         run: |
